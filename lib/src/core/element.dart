@@ -13,7 +13,7 @@ class SelectableElementDetails {
 
 abstract class SelectableElementWidget extends StatefulWidget {
   const SelectableElementWidget({
-    required GlobalKey key,
+    required GlobalKey<SelectableElementWidgetState> key,
   }) : super(key: key);
 
   @override
@@ -25,7 +25,9 @@ abstract class SelectableElementWidgetState<T extends SelectableElementWidget>
   /// The selection of the element.
   ElementSelection? get selection;
 
-  SelectableElementDetails get details;
+  SelectableElementDetails get details => SelectableElementDetails(
+        key: widget.key! as GlobalKey<SelectableElementWidgetState>,
+      );
 
   /// Get the [ElementPosition] of the [SelectableElement] at a localPosition.
   ElementPosition getPositionAtOffset(Offset localOffset);
@@ -62,10 +64,11 @@ abstract class SelectableElementWidgetState<T extends SelectableElementWidget>
 ///  }
 /// ```
 class SelectableElementRegistrar extends StatefulWidget {
-  SelectableElementRegistrar({
+  const SelectableElementRegistrar({
+    Key? key,
     required this.child,
     required this.details,
-  }) : super(key: details.key);
+  }) : super(key: key);
 
   final SelectableElementDetails details;
   final Widget child;

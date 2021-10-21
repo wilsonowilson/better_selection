@@ -25,29 +25,31 @@ class MyHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SelectableScope(
-        child: Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              SelectableTextElement(
-                textSpan: const TextSpan(
-                  text: 'Hello world',
-                  style: TextStyle(
-                    color: Colors.black,
+    return SelectableScope(
+      child: Scaffold(
+        body: SelectableScope(
+          child: Center(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SelectableTextElement(
+                  textSpan: const TextSpan(
+                    text: 'Hello world',
+                    style: TextStyle(
+                      color: Colors.black,
+                    ),
                   ),
                 ),
-              ),
-              SelectableTextElement(
-                textSpan: const TextSpan(
-                  text: 'Hello world',
-                  style: TextStyle(
-                    color: Colors.black,
+                SelectableTextElement(
+                  textSpan: const TextSpan(
+                    text: 'Hello world',
+                    style: TextStyle(
+                      color: Colors.black,
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

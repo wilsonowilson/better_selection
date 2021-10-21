@@ -53,9 +53,9 @@ class TextElementSelection extends TextSelection implements ElementSelection {
 
 class SelectableTextElement extends SelectableElementWidget {
   SelectableTextElement({
-    GlobalKey? key,
+    GlobalKey<SelectableElementWidgetState>? key,
     required this.textSpan,
-  }) : super(key: key ?? GlobalKey());
+  }) : super(key: key ?? GlobalKey<SelectableElementWidgetState>());
 
   final TextSpan textSpan;
 
@@ -65,7 +65,6 @@ class SelectableTextElement extends SelectableElementWidget {
 
 class _SelectableTextElementState
     extends SelectableElementWidgetState<SelectableTextElement> {
-  final _details = SelectableElementDetails(key: GlobalKey());
   final _selectableTextKey = GlobalKey<SuperSelectableTextState>();
 
   TextElementSelection _selection =
@@ -86,9 +85,6 @@ class _SelectableTextElementState
       _selection = selection;
     });
   }
-
-  @override
-  SelectableElementDetails get details => _details;
 
   @override
   TextElementPosition getBasePosition() {
