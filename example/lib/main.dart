@@ -30,9 +30,9 @@ class MyHomePage extends StatelessWidget {
         child: Center(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
-            children: const [
+            children: [
               SelectableTextElement(
-                textSpan: TextSpan(
+                textSpan: const TextSpan(
                   text: 'Hello world',
                   style: TextStyle(
                     color: Colors.black,
@@ -40,7 +40,7 @@ class MyHomePage extends StatelessWidget {
                 ),
               ),
               SelectableTextElement(
-                textSpan: TextSpan(
+                textSpan: const TextSpan(
                   text: 'Hello world',
                   style: TextStyle(
                     color: Colors.black,

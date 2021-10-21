@@ -51,11 +51,11 @@ class TextElementSelection extends TextSelection implements ElementSelection {
   TextElementPosition get extent => TextElementPosition(offset: extentOffset);
 }
 
-class SelectableTextElement extends StatefulWidget {
-  const SelectableTextElement({
-    Key? key,
+class SelectableTextElement extends SelectableElementWidget {
+  SelectableTextElement({
+    GlobalKey? key,
     required this.textSpan,
-  }) : super(key: key);
+  }) : super(key: key ?? GlobalKey());
 
   final TextSpan textSpan;
 
@@ -63,8 +63,8 @@ class SelectableTextElement extends StatefulWidget {
   _SelectableTextElementState createState() => _SelectableTextElementState();
 }
 
-class _SelectableTextElementState extends State<SelectableTextElement>
-    with SelectableElement {
+class _SelectableTextElementState
+    extends SelectableElementWidgetState<SelectableTextElement> {
   final _details = SelectableElementDetails(key: GlobalKey());
   final _selectableTextKey = GlobalKey<SuperSelectableTextState>();
 

@@ -7,9 +7,9 @@ void main() {
     testWidgets('of(context) fails when there is no SelectableScope parent',
         (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
+        MaterialApp(
           home: SelectableTextElement(
-            textSpan: TextSpan(
+            textSpan: const TextSpan(
               text: 'Hello world!',
             ),
           ),

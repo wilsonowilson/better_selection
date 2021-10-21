@@ -8,14 +8,14 @@ void main() {
       final widget = MaterialApp(
         home: SelectableScope(
           child: Column(
-            children: const [
+            children: [
               SelectableTextElement(
-                textSpan: TextSpan(
+                textSpan: const TextSpan(
                   text: 'Hello world!',
                 ),
               ),
               SelectableTextElement(
-                textSpan: TextSpan(
+                textSpan: const TextSpan(
                   text: 'Hello world!',
                 ),
               ),
@@ -41,8 +41,9 @@ void main() {
                 valueListenable: notifier,
                 builder: (context, hideWidget, _) {
                   if (hideWidget) return const SizedBox();
-                  return const SelectableTextElement(
-                    textSpan: TextSpan(
+                  return SelectableTextElement(
+                    key: GlobalKey(),
+                    textSpan: const TextSpan(
                       text: 'Hello world!',
                     ),
                   );

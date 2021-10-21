@@ -11,7 +11,17 @@ class SelectableElementDetails {
   final GlobalKey key;
 }
 
-mixin SelectableElement<T extends StatefulWidget> on State<T> {
+abstract class SelectableElementWidget extends StatefulWidget {
+  const SelectableElementWidget({
+    required GlobalKey key,
+  }) : super(key: key);
+
+  @override
+  SelectableElementWidgetState createState();
+}
+
+abstract class SelectableElementWidgetState<T extends SelectableElementWidget>
+    extends State<T> {
   /// The selection of the element.
   ElementSelection? get selection;
 
