@@ -73,7 +73,7 @@ class _SelectableTextElementState
       const TextElementSelection.collapsed(offset: -1);
 
   @override
-  TextElementSelection? get selection => _selection;
+  TextElementSelection get selection => _selection;
 
   @override
   void updateSelection(ElementSelection selection) {
@@ -171,6 +171,22 @@ class _SelectableTextElementState
     return TextElementSelection.fromTextSelection(
       _selectableTextKey.currentState!.getWordSelectionAt(textElementPosition),
     );
+  }
+
+  @override
+  TextElementSelection getParagraphSelectionAt(
+    TextElementPosition textElementPosition,
+  ) {
+    final selection = expandPositionToParagraph(
+      text: getContiguousTextAt(textElementPosition),
+      textPosition: textElementPosition,
+    );
+    return TextElementSelection.fromTextSelection(selection);
+  }
+
+  @override
+  TextElementSelection getVoidSelection() {
+    return const TextElementSelection.collapsed(offset: -1);
   }
 
   @override

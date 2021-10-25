@@ -23,11 +23,13 @@ abstract class SelectableElementWidget extends StatefulWidget {
 abstract class SelectableElementWidgetState<T extends SelectableElementWidget>
     extends State<T> {
   /// The selection of the element.
-  ElementSelection? get selection;
+  ElementSelection get selection;
 
   SelectableElementDetails get details => SelectableElementDetails(
         key: widget.key! as GlobalKey<SelectableElementWidgetState>,
       );
+
+  ElementSelection getVoidSelection();
 
   /// Get the [ElementPosition] of the [SelectableElement] at a localPosition.
   ElementPosition getPositionAtOffset(Offset localOffset);

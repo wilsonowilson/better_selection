@@ -4,6 +4,9 @@ abstract class TextElement {
   TextElementSelection getWordSelectionAt(
     TextElementPosition textElementPosition,
   );
+  TextElementSelection getParagraphSelectionAt(
+    TextElementPosition textElementPosition,
+  );
 
   TextElementPosition? getPositionOneLineUp(
     TextElementPosition textElementPosition,

@@ -28,26 +28,29 @@ class MyHomePage extends StatelessWidget {
     return SelectableScope(
       child: Scaffold(
         body: SelectableScope(
-          child: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SelectableTextElement(
-                  textSpan: const TextSpan(
-                    text: 'Hello world',
-                    style: TextStyle(
-                      color: Colors.black,
+                Card(
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        _buildText('Home'),
+                        const SizedBox(width: 8),
+                        _buildText('About'),
+                        const SizedBox(width: 8),
+                        _buildText('Contact'),
+                      ],
                     ),
                   ),
                 ),
-                SelectableTextElement(
-                  textSpan: const TextSpan(
-                    text: 'Hello world',
-                    style: TextStyle(
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
+                const SizedBox(height: 12),
+                _buildText(lipsumLg),
+                const SizedBox(height: 12),
+                _buildText(lipsumLg),
               ],
             ),
           ),
@@ -55,4 +58,32 @@ class MyHomePage extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildText(String text, [TextStyle? style]) {
+    return SelectableTextElement(
+      textSpan: TextSpan(
+        text: text,
+        style: style ??
+            const TextStyle(
+              color: Colors.black,
+            ),
+      ),
+    );
+  }
 }
+
+const lipsumSm = 'Lorem ipsum dolor sit amet, consectetur adipiscing '
+    'elit, sed do eiusmod tempor incididunt ut '
+    'labore et dolore magna aliqua.';
+
+const lipsumMd = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, '
+    'sed do eiusmod tempor incididunt ut labore et dolore '
+    'magna aliqua. Ut enim ad minim veniam, quis nostrud '
+    'exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. ';
+
+const lipsumLg = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, '
+    'sed do eiusmod tempor incididunt ut labore et dolore magna '
+    'aliqua. Ut enim ad minim veniam, quis nostrud exercitation '
+    'ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis '
+    'aute irure dolor in reprehenderit in voluptate velit esse '
+    'cillum dolore eu fugiat nulla pariatur.';

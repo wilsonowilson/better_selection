@@ -47,8 +47,6 @@ class SelectableScope extends StatefulWidget {
 }
 
 class SelectableScopeState extends State<SelectableScope> {
-  ScopeSelection? _selection;
-
   SelectionType _selectionType = SelectionType.position;
   Offset? _dragStartInViewport;
   Offset? _dragStartInScope;
@@ -56,6 +54,12 @@ class SelectableScopeState extends State<SelectableScope> {
   Offset? _dragEndInScope;
   Rect? _dragRectInViewport;
   late FocusNode _focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+  }
 
   @visibleForTesting
   final registeredElements = <SelectableElementDetails>{};
@@ -72,8 +76,14 @@ class SelectableScopeState extends State<SelectableScope> {
       _SelectableScopeLayoutResolver(registeredElements, context);
 
   void _clearSelection() {
-    /// TODO: Implement clear selection
+    for (final element in registeredElements) {
+      final state = element.key.currentState;
+
+      if (state == null) continue;
+      state.updateSelection(state.getVoidSelection());
+    }
   }
+
   void _onTapDown(TapDownDetails details) {
     _clearSelection();
     _selectionType = SelectionType.position;
@@ -225,16 +235,8 @@ class SelectableScopeState extends State<SelectableScope> {
 
     final selection = state.getWordSelectionAt(elementPosition);
 
-    _selection = ScopeSelection(
-      base: ScopePosition(
-        elementDetails: position.elementDetails,
-        elementPosition: selection.base,
-      ),
-      extent: ScopePosition(
-        elementDetails: position.elementDetails,
-        elementPosition: selection.extent,
-      ),
-    );
+    (state as SelectableElementWidgetState<SelectableElementWidget>)
+        .updateSelection(selection);
   }
 
   void _selectParagraphAt({required ScopePosition scopePosition}) {
@@ -243,56 +245,46 @@ class SelectableScopeState extends State<SelectableScope> {
     if (elementPosition is! TextElementPosition) return;
 
     final state = position.elementDetails.key.currentState as TextElement?;
-
     if (state == null) return;
+    final selection = state.getParagraphSelectionAt(elementPosition);
 
-    final selection = expandPositionToParagraph(
-      text: state.getContiguousTextAt(elementPosition),
-      textPosition: elementPosition,
-    );
-
-    _selection = ScopeSelection(
-      base: ScopePosition(
-        elementDetails: position.elementDetails,
-        elementPosition: TextElementPosition.fromTextPosition(selection.base),
-      ),
-      extent: ScopePosition(
-        elementDetails: position.elementDetails,
-        elementPosition: TextElementPosition.fromTextPosition(selection.extent),
-      ),
-    );
+    (state as SelectableElementWidgetState<SelectableElementWidget>)
+        .updateSelection(TextElementSelection.fromTextSelection(selection));
   }
 
   @override
   Widget build(BuildContext context) {
-    return RawGestureDetector(
-      behavior: HitTestBehavior.translucent,
-      gestures: <Type, GestureRecognizerFactory>{
-        TapSequenceGestureRecognizer:
-            GestureRecognizerFactoryWithHandlers<TapSequenceGestureRecognizer>(
-          () => TapSequenceGestureRecognizer(),
-          (TapSequenceGestureRecognizer recognizer) {
-            recognizer
-              ..onTapDown = _onTapDown
-              ..onDoubleTapDown = _onDoubleTapDown
-              ..onDoubleTap = _onDoubleTap
-              ..onTripleTapDown = _onTripleTapDown
-              ..onTripleTap = _onTripleTap;
-          },
-        ),
-        PanGestureRecognizer:
-            GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
-          () => PanGestureRecognizer(),
-          (PanGestureRecognizer recognizer) {
-            recognizer
-              ..onStart = _onPanStart
-              ..onUpdate = _onPanUpdate
-              ..onEnd = _onPanEnd
-              ..onCancel = _onPanCancel;
-          },
-        ),
-      },
-      child: widget.child,
+    return Focus(
+      focusNode: _focusNode,
+      child: RawGestureDetector(
+        behavior: HitTestBehavior.translucent,
+        gestures: <Type, GestureRecognizerFactory>{
+          TapSequenceGestureRecognizer: GestureRecognizerFactoryWithHandlers<
+              TapSequenceGestureRecognizer>(
+            () => TapSequenceGestureRecognizer(),
+            (TapSequenceGestureRecognizer recognizer) {
+              recognizer
+                ..onTapDown = _onTapDown
+                ..onDoubleTapDown = _onDoubleTapDown
+                ..onDoubleTap = _onDoubleTap
+                ..onTripleTapDown = _onTripleTapDown
+                ..onTripleTap = _onTripleTap;
+            },
+          ),
+          PanGestureRecognizer:
+              GestureRecognizerFactoryWithHandlers<PanGestureRecognizer>(
+            () => PanGestureRecognizer(),
+            (PanGestureRecognizer recognizer) {
+              recognizer
+                ..onStart = _onPanStart
+                ..onUpdate = _onPanUpdate
+                ..onEnd = _onPanEnd
+                ..onCancel = _onPanCancel;
+            },
+          ),
+        },
+        child: widget.child,
+      ),
     );
   }
 }
