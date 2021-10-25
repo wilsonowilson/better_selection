@@ -177,85 +177,81 @@ class SelectableScopeState extends State<SelectableScope> {
     required Offset extentOffset,
     required SelectionType selectionType,
   }) {
-    setState(() {
-      for (final element in registeredElements) {
-        final elementKey = element.key;
-        final elementState = elementKey.currentState;
-        final elementBox =
-            elementKey.currentContext?.findRenderObject() as RenderBox?;
+    for (final element in registeredElements) {
+      final elementKey = element.key;
+      final elementState = elementKey.currentState;
+      final elementBox =
+          elementKey.currentContext?.findRenderObject() as RenderBox?;
 
-        if (elementState != null && elementBox != null) {
-          final localBaseOffset = elementBox.globalToLocal(
-            baseOffset,
-            ancestor: context.findRenderObject(),
-          );
-          final localExtentOffset = elementBox.globalToLocal(
-            extentOffset,
-            ancestor: context.findRenderObject(),
-          );
-          if (!_rectOverlapsElement(
-            Rect.fromPoints(baseOffset, extentOffset),
-            element,
-          )) {
-            elementState.updateSelection(elementState.getVoidSelection());
-            continue;
-          }
-
-          final elementSelection = elementState.getSelectionInRange(
-            localBaseOffset,
-            localExtentOffset,
-          );
-
-          if (elementSelection == null) {
-            continue;
-          }
-          // TODO: Handle selection type variations
-          ElementSelection adjustedSelection = elementSelection;
-
-          if (_selectionType == SelectionType.paragraph) {
-            final newSelection = elementState.getExpandedSelection();
-            adjustedSelection = newSelection;
-          } else if (_selectionType == SelectionType.word) {
-            if (elementState is TextElement) {
-              final textElementState = elementState as TextElement;
-
-              final currentSelection = elementSelection as TextElementSelection;
-              if (!currentSelection.isValid) break;
-              final wordSelectionAtBase =
-                  textElementState.getWordSelectionAt(currentSelection.base);
-              final wordSelectionAtExtent =
-                  textElementState.getWordSelectionAt(currentSelection.extent);
-
-              final lowerBound = min(
-                min(
-                  currentSelection.start,
-                  wordSelectionAtBase.start,
-                ),
-                wordSelectionAtExtent.start,
-              );
-              final upperBound = max(
-                max(
-                  currentSelection.end,
-                  wordSelectionAtBase.end,
-                ),
-                wordSelectionAtExtent.end,
-              );
-              adjustedSelection = TextElementSelection(
-                baseOffset: currentSelection.affinity == TextAffinity.downstream
-                    ? lowerBound
-                    : upperBound,
-                extentOffset:
-                    currentSelection.affinity == TextAffinity.downstream
-                        ? upperBound
-                        : lowerBound,
-              );
-            }
-          }
-
-          elementState.updateSelection(adjustedSelection);
+      if (elementState != null && elementBox != null) {
+        final localBaseOffset = elementBox.globalToLocal(
+          baseOffset,
+          ancestor: context.findRenderObject(),
+        );
+        final localExtentOffset = elementBox.globalToLocal(
+          extentOffset,
+          ancestor: context.findRenderObject(),
+        );
+        if (!_rectOverlapsElement(
+          Rect.fromPoints(baseOffset, extentOffset),
+          element,
+        )) {
+          elementState.updateSelection(elementState.getVoidSelection());
+          continue;
         }
+
+        final elementSelection = elementState.getSelectionInRange(
+          localBaseOffset,
+          localExtentOffset,
+        );
+
+        if (elementSelection == null) {
+          continue;
+        }
+        // TODO: Handle selection type variations
+        ElementSelection adjustedSelection = elementSelection;
+
+        if (_selectionType == SelectionType.paragraph) {
+          final newSelection = elementState.getExpandedSelection();
+          adjustedSelection = newSelection;
+        } else if (_selectionType == SelectionType.word) {
+          if (elementState is TextElement) {
+            final textElementState = elementState as TextElement;
+
+            final currentSelection = elementSelection as TextElementSelection;
+            if (!currentSelection.isValid) break;
+            final wordSelectionAtBase =
+                textElementState.getWordSelectionAt(currentSelection.base);
+            final wordSelectionAtExtent =
+                textElementState.getWordSelectionAt(currentSelection.extent);
+
+            final lowerBound = min(
+              min(
+                currentSelection.start,
+                wordSelectionAtBase.start,
+              ),
+              wordSelectionAtExtent.start,
+            );
+            final upperBound = max(
+              max(
+                currentSelection.end,
+                wordSelectionAtBase.end,
+              ),
+              wordSelectionAtExtent.end,
+            );
+            adjustedSelection = TextElementSelection(
+              baseOffset: currentSelection.affinity == TextAffinity.downstream
+                  ? lowerBound
+                  : upperBound,
+              extentOffset: currentSelection.affinity == TextAffinity.downstream
+                  ? upperBound
+                  : lowerBound,
+            );
+          }
+        }
+        elementState.updateSelection(adjustedSelection);
       }
-    });
+    }
   }
 
   void _selectWordAt({required ScopePosition scopePosition}) {
