@@ -8,7 +8,7 @@ class SelectableElementDetails {
   const SelectableElementDetails({
     required this.key,
   });
-  final GlobalKey key;
+  final GlobalKey<SelectableElementWidgetState> key;
 }
 
 abstract class SelectableElementWidget extends StatefulWidget {
@@ -39,6 +39,11 @@ abstract class SelectableElementWidgetState<T extends SelectableElementWidget>
   /// Get the ending position of the [SelectableElement], for example,
   /// the end of a text element.
   ElementPosition getExtentPosition();
+
+  ElementSelection? getSelectionInRange(
+    Offset localBaseOffset,
+    Offset localExtentOffset,
+  );
 
   /// Convert the selection into copyable text.
   String serializeSelection(ElementSelection selection);

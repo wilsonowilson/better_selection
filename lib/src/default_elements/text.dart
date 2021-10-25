@@ -3,6 +3,7 @@ import 'package:super_editor/super_editor.dart';
 
 import 'package:super_selection/src/core/element.dart';
 import 'package:super_selection/src/core/selection.dart';
+import 'package:super_selection/src/core/text.dart';
 
 class TextElementPosition extends TextPosition implements ElementPosition {
   const TextElementPosition({
@@ -64,7 +65,8 @@ class SelectableTextElement extends SelectableElementWidget {
 }
 
 class _SelectableTextElementState
-    extends SelectableElementWidgetState<SelectableTextElement> {
+    extends SelectableElementWidgetState<SelectableTextElement>
+    implements TextElement {
   final _selectableTextKey = GlobalKey<SuperSelectableTextState>();
 
   TextElementSelection _selection =
@@ -104,11 +106,78 @@ class _SelectableTextElementState
   }
 
   @override
+  TextElementSelection? getSelectionInRange(
+    Offset localBaseOffset,
+    Offset localExtentOffset,
+  ) {
+    final selection = _selectableTextKey.currentState!.getSelectionInRect(
+      localBaseOffset,
+      localExtentOffset,
+    );
+
+    return TextElementSelection.fromTextSelection(selection);
+  }
+
+  @override
   String serializeSelection(ElementSelection selection) {
     return _rawText;
   }
 
   String get _rawText => widget.textSpan.toPlainText();
+
+  @override
+  TextElementPosition? getPositionOneLineUp(TextElementPosition textPosition) {
+    final positionOneLineUp =
+        _selectableTextKey.currentState!.getPositionOneLineUp(textPosition);
+    if (positionOneLineUp == null) {
+      return null;
+    }
+    return TextElementPosition.fromTextPosition(positionOneLineUp);
+  }
+
+  @override
+  TextElementPosition? getPositionOneLineDown(
+    TextElementPosition textPosition,
+  ) {
+    final positionOneLineDown =
+        _selectableTextKey.currentState!.getPositionOneLineDown(textPosition);
+    if (positionOneLineDown == null) {
+      return null;
+    }
+    return TextElementPosition.fromTextPosition(positionOneLineDown);
+  }
+
+  @override
+  TextElementPosition getPositionAtEndOfLine(TextElementPosition textPosition) {
+    return TextElementPosition.fromTextPosition(
+      _selectableTextKey.currentState!.getPositionAtEndOfLine(textPosition),
+    );
+  }
+
+  @override
+  TextElementPosition getPositionAtStartOfLine(
+    TextElementPosition textElementPosition,
+  ) {
+    return TextElementPosition.fromTextPosition(
+      _selectableTextKey.currentState!
+          .getPositionAtStartOfLine(textElementPosition),
+    );
+  }
+
+  @override
+  TextElementSelection getWordSelectionAt(
+    TextElementPosition textElementPosition,
+  ) {
+    return TextElementSelection.fromTextSelection(
+      _selectableTextKey.currentState!.getWordSelectionAt(textElementPosition),
+    );
+  }
+
+  @override
+  String getContiguousTextAt(TextElementPosition textPosition) {
+    // TODO: Split by \n
+    return _rawText;
+  }
 
   @override
   Widget build(BuildContext context) {
