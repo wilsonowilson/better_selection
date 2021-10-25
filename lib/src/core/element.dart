@@ -31,6 +31,8 @@ abstract class SelectableElementWidgetState<T extends SelectableElementWidget>
 
   ElementSelection getVoidSelection();
 
+  ElementSelection getExpandedSelection();
+
   /// Get the [ElementPosition] of the [SelectableElement] at a localPosition.
   ElementPosition getPositionAtOffset(Offset localOffset);
 

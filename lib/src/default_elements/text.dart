@@ -5,53 +5,6 @@ import 'package:super_selection/src/core/element.dart';
 import 'package:super_selection/src/core/selection.dart';
 import 'package:super_selection/src/core/text.dart';
 
-class TextElementPosition extends TextPosition implements ElementPosition {
-  const TextElementPosition({
-    required int offset,
-    TextAffinity affinity = TextAffinity.downstream,
-  }) : super(offset: offset, affinity: affinity);
-
-  TextElementPosition.fromTextPosition(TextPosition position)
-      : super(offset: position.offset, affinity: position.affinity);
-}
-
-class TextElementSelection extends TextSelection implements ElementSelection {
-  const TextElementSelection({
-    required int baseOffset,
-    required int extentOffset,
-    TextAffinity affinity = TextAffinity.downstream,
-    bool isDirectional = false,
-  }) : super(
-          baseOffset: baseOffset,
-          extentOffset: extentOffset,
-          affinity: affinity,
-          isDirectional: isDirectional,
-        );
-
-  const TextElementSelection.collapsed({
-    required int offset,
-    TextAffinity affinity = TextAffinity.downstream,
-  }) : super(
-          baseOffset: offset,
-          extentOffset: offset,
-          affinity: affinity,
-        );
-
-  TextElementSelection.fromTextSelection(TextSelection textSelection)
-      : super(
-          baseOffset: textSelection.baseOffset,
-          extentOffset: textSelection.extentOffset,
-          affinity: textSelection.affinity,
-          isDirectional: textSelection.isDirectional,
-        );
-
-  @override
-  TextElementPosition get base => TextElementPosition(offset: baseOffset);
-
-  @override
-  TextElementPosition get extent => TextElementPosition(offset: extentOffset);
-}
-
 class SelectableTextElement extends SelectableElementWidget {
   SelectableTextElement({
     GlobalKey<SelectableElementWidgetState>? key,
@@ -110,10 +63,15 @@ class _SelectableTextElementState
     Offset localBaseOffset,
     Offset localExtentOffset,
   ) {
+    // This selection is never null because it is resolved to offset = 0 if
+    // the rect is above the widget and offset = text.length if the rect
+    // is below.
     final selection = _selectableTextKey.currentState!.getSelectionInRect(
       localBaseOffset,
       localExtentOffset,
     );
+
+    if (selection.isCollapsed) return null;
 
     return TextElementSelection.fromTextSelection(selection);
   }
@@ -187,6 +145,11 @@ class _SelectableTextElementState
   @override
   TextElementSelection getVoidSelection() {
     return const TextElementSelection.collapsed(offset: -1);
+  }
+
+  @override
+  TextElementSelection getExpandedSelection() {
+    return TextElementSelection(baseOffset: 0, extentOffset: _rawText.length);
   }
 
   @override

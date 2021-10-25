@@ -11,6 +11,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -38,6 +39,15 @@ class MyHomePage extends StatelessWidget {
                     padding: const EdgeInsets.all(12),
                     child: Row(
                       children: [
+                        _buildText(
+                          'Example',
+                          const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const Spacer(),
                         _buildText('Home'),
                         const SizedBox(width: 8),
                         _buildText('About'),

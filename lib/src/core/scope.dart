@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:super_editor/super_editor.dart';
@@ -48,11 +50,9 @@ class SelectableScope extends StatefulWidget {
 
 class SelectableScopeState extends State<SelectableScope> {
   SelectionType _selectionType = SelectionType.position;
-  Offset? _dragStartInViewport;
   Offset? _dragStartInScope;
-  Offset? _dragEndInViewport;
   Offset? _dragEndInScope;
-  Rect? _dragRectInViewport;
+
   late FocusNode _focusNode;
 
   @override
@@ -134,28 +134,14 @@ class SelectableScopeState extends State<SelectableScope> {
   }
 
   void _onPanStart(DragStartDetails details) {
-    _dragStartInViewport = details.localPosition;
     _dragStartInScope = details.globalPosition;
-
     _clearSelection();
-    _dragRectInViewport = Rect.fromLTWH(
-      _dragStartInViewport!.dx,
-      _dragStartInViewport!.dy,
-      1,
-      1,
-    );
-
     _focusNode.requestFocus();
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
     setState(() {
-      _dragEndInViewport = details.localPosition;
       _dragEndInScope = details.globalPosition;
-      _dragRectInViewport = Rect.fromPoints(
-        _dragStartInViewport!,
-        _dragEndInViewport!,
-      );
 
       _updateDragSelection();
     });
@@ -165,7 +151,6 @@ class SelectableScopeState extends State<SelectableScope> {
     setState(() {
       _dragStartInScope = null;
       _dragEndInScope = null;
-      _dragRectInViewport = null;
     });
   }
 
@@ -173,7 +158,6 @@ class SelectableScopeState extends State<SelectableScope> {
     setState(() {
       _dragStartInScope = null;
       _dragEndInScope = null;
-      _dragRectInViewport = null;
     });
   }
 
@@ -209,16 +193,66 @@ class SelectableScopeState extends State<SelectableScope> {
             extentOffset,
             ancestor: context.findRenderObject(),
           );
+          if (!_rectOverlapsElement(
+            Rect.fromPoints(baseOffset, extentOffset),
+            element,
+          )) {
+            elementState.updateSelection(elementState.getVoidSelection());
+            continue;
+          }
 
           final elementSelection = elementState.getSelectionInRange(
             localBaseOffset,
             localExtentOffset,
           );
-          // TODO: Handle if collapsed
-          // TODO: Handle selection type variations
-          if (elementSelection != null) {
-            elementState.updateSelection(elementSelection);
+
+          if (elementSelection == null) {
+            continue;
           }
+          // TODO: Handle selection type variations
+          ElementSelection adjustedSelection = elementSelection;
+
+          if (_selectionType == SelectionType.paragraph) {
+            final newSelection = elementState.getExpandedSelection();
+            adjustedSelection = newSelection;
+          } else if (_selectionType == SelectionType.word) {
+            if (elementState is TextElement) {
+              final textElementState = elementState as TextElement;
+
+              final currentSelection = elementSelection as TextElementSelection;
+              if (!currentSelection.isValid) break;
+              final wordSelectionAtBase =
+                  textElementState.getWordSelectionAt(currentSelection.base);
+              final wordSelectionAtExtent =
+                  textElementState.getWordSelectionAt(currentSelection.extent);
+
+              final lowerBound = min(
+                min(
+                  currentSelection.start,
+                  wordSelectionAtBase.start,
+                ),
+                wordSelectionAtExtent.start,
+              );
+              final upperBound = max(
+                max(
+                  currentSelection.end,
+                  wordSelectionAtBase.end,
+                ),
+                wordSelectionAtExtent.end,
+              );
+              adjustedSelection = TextElementSelection(
+                baseOffset: currentSelection.affinity == TextAffinity.downstream
+                    ? lowerBound
+                    : upperBound,
+                extentOffset:
+                    currentSelection.affinity == TextAffinity.downstream
+                        ? upperBound
+                        : lowerBound,
+              );
+            }
+          }
+
+          elementState.updateSelection(adjustedSelection);
         }
       }
     });
@@ -250,6 +284,23 @@ class SelectableScopeState extends State<SelectableScope> {
 
     (state as SelectableElementWidgetState<SelectableElementWidget>)
         .updateSelection(TextElementSelection.fromTextSelection(selection));
+  }
+
+  bool _rectOverlapsElement(Rect region, SelectableElementDetails element) {
+    final componentBox =
+        element.key.currentContext!.findRenderObject()! as RenderBox;
+    final contentOffset = componentBox.localToGlobal(
+      Offset.zero,
+      ancestor: context.findRenderObject(),
+    );
+    final componentBounds = contentOffset & componentBox.size;
+
+    if (region.overlaps(componentBounds)) {
+      // Report the overlap in our local coordinate space.
+      return true;
+    } else {
+      return false;
+    }
   }
 
   @override
