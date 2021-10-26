@@ -52,7 +52,7 @@ class SelectableScopeState extends State<SelectableScope> {
   SelectionType _selectionType = SelectionType.position;
   Offset? _dragStartInScope;
   Offset? _dragEndInScope;
-
+  MouseCursor? _cursorStyle;
   late FocusNode _focusNode;
 
   @override
@@ -62,7 +62,7 @@ class SelectableScopeState extends State<SelectableScope> {
   }
 
   @visibleForTesting
-  final registeredElements = <SelectableElementDetails>{};
+  final registeredElements = <SelectableElementDetails>[];
 
   void registerElement(SelectableElementDetails details) {
     registeredElements.add(details);
@@ -192,13 +192,6 @@ class SelectableScopeState extends State<SelectableScope> {
           extentOffset,
           ancestor: context.findRenderObject(),
         );
-        if (!_rectOverlapsElement(
-          Rect.fromPoints(baseOffset, extentOffset),
-          element,
-        )) {
-          elementState.updateSelection(elementState.getVoidSelection());
-          continue;
-        }
 
         final elementSelection = elementState.getSelectionInRange(
           localBaseOffset,
@@ -206,6 +199,7 @@ class SelectableScopeState extends State<SelectableScope> {
         );
 
         if (elementSelection == null) {
+          elementState.updateSelection(elementState.getVoidSelection());
           continue;
         }
         // TODO: Handle selection type variations
@@ -282,21 +276,48 @@ class SelectableScopeState extends State<SelectableScope> {
         .updateSelection(TextElementSelection.fromTextSelection(selection));
   }
 
-  bool _rectOverlapsElement(Rect region, SelectableElementDetails element) {
-    final componentBox =
-        element.key.currentContext!.findRenderObject()! as RenderBox;
-    final contentOffset = componentBox.localToGlobal(
-      Offset.zero,
-      ancestor: context.findRenderObject(),
-    );
-    final componentBounds = contentOffset & componentBox.size;
+  void _onMouseMove(PointerEvent pointerEvent) {
+    _updateCursorStyle(pointerEvent.position);
+  }
 
-    if (region.overlaps(componentBounds)) {
-      // Report the overlap in our local coordinate space.
-      return true;
-    } else {
-      return false;
+  void _updateCursorStyle(Offset cursorOffset) {
+    SelectableElementDetails? elementAboveCursor;
+    for (final element in registeredElements) {
+      final box = element.key.currentContext?.findRenderObject() as RenderBox?;
+      if (box == null) continue;
+      final size = box.size;
+      final offset =
+          box.localToGlobal(Offset.zero, ancestor: context.findRenderObject());
+      final rect = Rect.fromLTWH(offset.dx, offset.dy, size.width, size.height);
+
+      if (rect.contains(cursorOffset)) {
+        elementAboveCursor = element;
+        break;
+      }
     }
+
+    if (elementAboveCursor == null) {
+      setState(() {
+        _cursorStyle = MouseCursor.defer;
+      });
+      return;
+    }
+
+    final box =
+        elementAboveCursor.key.currentContext!.findRenderObject()! as RenderBox;
+
+    final localOffset = box.globalToLocal(cursorOffset);
+    final desiredCursor =
+        elementAboveCursor.key.currentState!.getCursorAtOffset(localOffset);
+
+    if (desiredCursor == null) {
+      setState(() {
+        _cursorStyle = MouseCursor.defer;
+      });
+    }
+    setState(() {
+      _cursorStyle = desiredCursor;
+    });
   }
 
   @override
@@ -330,7 +351,14 @@ class SelectableScopeState extends State<SelectableScope> {
             },
           ),
         },
-        child: widget.child,
+        child: MouseRegion(
+          onHover: _onMouseMove,
+          cursor: _cursorStyle ?? MouseCursor.defer,
+          child: Listener(
+            onPointerMove: _onMouseMove,
+            child: widget.child,
+          ),
+        ),
       ),
     );
   }
@@ -341,7 +369,7 @@ class _SelectableScopeLayoutResolver {
     this._elements,
     this.context,
   );
-  final Set<SelectableElementDetails> _elements;
+  final List<SelectableElementDetails> _elements;
   final BuildContext context;
 
   ScopePosition? getScopePositionAtOffset(Offset globalPosition) {

@@ -169,4 +169,12 @@ class _SelectableTextElementState
       ),
     );
   }
+
+  @override
+  MouseCursor? getCursorAtOffset(Offset localOffset) {
+    final offsetOverlapsText =
+        _selectableTextKey.currentState?.isTextAtOffset(localOffset) ?? false;
+
+    if (offsetOverlapsText) return SystemMouseCursors.text;
+  }
 }
