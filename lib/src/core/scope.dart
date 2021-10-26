@@ -349,7 +349,7 @@ class SelectableScopeState extends State<SelectableScope> {
       if (state == null) continue;
       final currentSelection = state.selection;
       final text = state.serializeSelection(currentSelection);
-      if (text != null) {
+      if (text != null && text.isNotEmpty) {
         buffer
           ..writeln(text)
           ..writeln();

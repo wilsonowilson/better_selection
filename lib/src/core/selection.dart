@@ -4,11 +4,15 @@ import 'element.dart';
 
 /// A logical representation of a position within a selectable element.
 @immutable
-abstract class ElementPosition {}
+abstract class ElementPosition {
+  const ElementPosition();
+}
 
 /// Interface for the selection within a selectable element.
 @immutable
-abstract class ElementSelection {}
+abstract class ElementSelection {
+  const ElementSelection();
+}
 
 /// A logical position within a SelectableScope.
 @immutable

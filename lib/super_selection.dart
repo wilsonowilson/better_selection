@@ -1,6 +1,7 @@
 export 'src/core/element.dart';
 export 'src/core/scope.dart';
 export 'src/core/selection.dart';
+export 'src/default_elements/box.dart';
 export 'src/default_elements/text.dart';
 
 /// Why super_selection depends on super_editor
