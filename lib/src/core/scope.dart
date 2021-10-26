@@ -286,6 +286,21 @@ class SelectableScopeState extends State<SelectableScope> {
     _updateCursorStyle(pointerEvent.position);
   }
 
+  List<SelectableElementDetails> _sortElementsByPosition() {
+    final elementList = registeredElements
+      ..sort((a, b) {
+        final aBox = a.key.currentContext!.findRenderObject()! as RenderBox;
+        final bBox = b.key.currentContext!.findRenderObject()! as RenderBox;
+
+        final aPos = aBox.localToGlobal(Offset.zero);
+        final bPos = bBox.localToGlobal(Offset.zero);
+
+        return aPos.compareTo(bPos);
+      });
+
+    return elementList;
+  }
+
   void _updateCursorStyle(Offset cursorOffset) {
     SelectableElementDetails? elementAboveCursor;
     for (final element in registeredElements) {
@@ -328,7 +343,8 @@ class SelectableScopeState extends State<SelectableScope> {
 
   String _getSelectedText() {
     final buffer = StringBuffer();
-    for (final element in registeredElements) {
+    final sortedElements = _sortElementsByPosition();
+    for (final element in sortedElements) {
       final state = element.key.currentState;
       if (state == null) continue;
       final currentSelection = state.selection;
@@ -359,6 +375,7 @@ class SelectableScopeState extends State<SelectableScope> {
           final text = _getSelectedText();
 
           final onCopy = widget.onCopy;
+
           if (onCopy == null) {
             Clipboard.setData(ClipboardData(text: text));
           } else {
@@ -453,5 +470,19 @@ class _SelectableScopeLayoutResolver {
     final widgetRect = widgetOffset & widgetBox.size;
 
     return widgetRect.contains(offset);
+  }
+}
+
+extension on Offset {
+  int compareTo(Offset other) {
+    if (dx == other.dx && dy == other.dy) return 0;
+
+    if (dy > other.dy) {
+      return 1;
+    } else if (dx > other.dx) {
+      return 1;
+    }
+
+    return 0;
   }
 }
