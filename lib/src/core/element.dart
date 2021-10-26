@@ -50,7 +50,7 @@ abstract class SelectableElementWidgetState<T extends SelectableElementWidget>
   );
 
   /// Convert the selection into copyable text.
-  String serializeSelection(ElementSelection selection);
+  String? serializeSelection(ElementSelection selection);
 
   MouseCursor? getCursorAtOffset(Offset localOffset);
 
