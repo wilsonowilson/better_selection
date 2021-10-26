@@ -28,41 +28,39 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SelectableScope(
       child: Scaffold(
-        body: SelectableScope(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Card(
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
-                      children: [
-                        _buildText(
-                          'Example',
-                          const TextStyle(
-                            fontSize: 16,
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Card(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
+                    children: [
+                      _buildText(
+                        'Example',
+                        const TextStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
                         ),
-                        const Spacer(),
-                        _buildText('Home'),
-                        const SizedBox(width: 8),
-                        _buildText('About'),
-                        const SizedBox(width: 8),
-                        _buildText('Contact'),
-                      ],
-                    ),
+                      ),
+                      const Spacer(),
+                      _buildText('Home'),
+                      const SizedBox(width: 8),
+                      _buildText('About'),
+                      const SizedBox(width: 8),
+                      _buildText('Contact'),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 12),
-                _buildText(lipsumLg),
-                const SizedBox(height: 12),
-                _buildText(lipsumLg),
-              ],
-            ),
+              ),
+              const SizedBox(height: 12),
+              _buildText(lipsumLg),
+              const SizedBox(height: 12),
+              _buildText(lipsumLg),
+            ],
           ),
         ),
       ),

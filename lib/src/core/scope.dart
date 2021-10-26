@@ -2,8 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:super_editor/super_editor.dart';
 import 'package:super_selection/src/core/text.dart';
+import 'package:super_selection/src/infrastructure/platform.dart';
 
 import 'package:super_selection/super_selection.dart';
 
@@ -11,9 +13,13 @@ class SelectableScope extends StatefulWidget {
   const SelectableScope({
     Key? key,
     required this.child,
+    this.onCopy,
   }) : super(key: key);
 
   final Widget child;
+
+  // Callback for when Cmd + C (Ctrl + C on windows) is pressed.
+  final ValueSetter<String>? onCopy;
 
   @override
   SelectableScopeState createState() => SelectableScopeState();
@@ -320,10 +326,49 @@ class SelectableScopeState extends State<SelectableScope> {
     });
   }
 
+  String _getSelectedText() {
+    final buffer = StringBuffer();
+    for (final element in registeredElements) {
+      final state = element.key.currentState;
+      if (state == null) continue;
+      final currentSelection = state.selection;
+      final text = state.serializeSelection(currentSelection);
+      if (text != null) {
+        buffer
+          ..writeln(text)
+          ..writeln();
+      }
+    }
+    return buffer.toString();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Focus(
       focusNode: _focusNode,
+      onKey: (_, event) {
+        if (event is RawKeyUpEvent) {
+          return KeyEventResult.ignored;
+        }
+        final isMacOS = Platform.instance.isMacOS;
+
+        final primaryKeyPressed =
+            isMacOS ? event.isMetaPressed : event.isControlPressed;
+
+        if (primaryKeyPressed && event.logicalKey == LogicalKeyboardKey.keyC) {
+          final text = _getSelectedText();
+
+          final onCopy = widget.onCopy;
+          if (onCopy == null) {
+            Clipboard.setData(ClipboardData(text: text));
+          } else {
+            onCopy(text);
+          }
+          return KeyEventResult.handled;
+        }
+
+        return KeyEventResult.ignored;
+      },
       child: RawGestureDetector(
         behavior: HitTestBehavior.translucent,
         gestures: <Type, GestureRecognizerFactory>{

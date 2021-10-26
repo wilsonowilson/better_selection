@@ -79,7 +79,9 @@ class _SelectableTextElementState
   @override
   String? serializeSelection(ElementSelection selection) {
     if (selection is! TextElementSelection) return null;
-    return selection.textInside(_rawText);
+    if (selection.isValid) {
+      return selection.textInside(_rawText);
+    }
   }
 
   String get _rawText => widget.textSpan.toPlainText();
