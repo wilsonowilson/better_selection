@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:super_selection/src/core/selectable.dart';
 import 'package:super_selection/src/core/selection.dart';
 
 class TextSelectablePosition extends TextPosition

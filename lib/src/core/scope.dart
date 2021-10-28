@@ -21,7 +21,7 @@ class SelectableScope extends StatefulWidget {
 
   final Widget child;
 
-  // Callback for when Cmd + C (Ctrl + C on windows) is pressed.
+  /// Callback for when Cmd + C (Ctrl + C on windows) is pressed.
   final ValueSetter<String>? onCopy;
 
   @override
@@ -185,6 +185,7 @@ class SelectableScopeState extends State<SelectableScope>
     _dragStartInScope = null;
     _dragEndInScope = null;
     _dragEndInScrollableViewport = null;
+    _dragStartInScrollableOffset = null;
     _currentScrollable = null;
   }
 
@@ -192,6 +193,7 @@ class SelectableScopeState extends State<SelectableScope>
     _dragStartInScope = null;
     _dragEndInScope = null;
     _dragEndInScrollableViewport = null;
+    _dragStartInScrollableOffset = null;
     _currentScrollable = null;
   }
 
@@ -242,7 +244,7 @@ class SelectableScopeState extends State<SelectableScope>
           selectableState.updateSelection(selectableState.getVoidSelection());
           continue;
         }
-        // TODO: Handle selection type variations
+
         SelectableSelection adjustedSelection = selectableSelection;
 
         if (_selectionType == SelectionType.paragraph) {
