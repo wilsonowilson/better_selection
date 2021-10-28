@@ -21,7 +21,7 @@ class SelectableScope extends StatefulWidget {
 
   final Widget child;
 
-  /// Callback for when Cmd + C (Ctrl + C on windows) is pressed.
+  // Callback for when Cmd + C (Ctrl + C on windows) is pressed.
   final ValueSetter<String>? onCopy;
 
   @override
@@ -63,7 +63,6 @@ class SelectableScopeState extends State<SelectableScope>
   Offset? _dragStartInScope;
   Offset? _dragEndInScope;
 
-  double? _dragStartInScrollableOffset;
   Offset? _dragEndInScrollableViewport;
   ScrollableState? _currentScrollable;
 
@@ -77,11 +76,20 @@ class SelectableScopeState extends State<SelectableScope>
   final _dragGutterExtent = 100;
   final _maxDragSpeed = 20;
 
+  Map<ScrollableState, double>? _dragStartOffsetInScrollables;
+
   @override
   void initState() {
     super.initState();
     _focusNode = FocusNode();
     _ticker = createTicker(_onTick);
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    _focusNode.dispose();
+    super.dispose();
   }
 
   @visibleForTesting
@@ -164,9 +172,8 @@ class SelectableScopeState extends State<SelectableScope>
     _clearSelection();
     _focusNode.requestFocus();
 
-    if (_currentScrollable != null) {
-      _dragStartInScrollableOffset = _currentScrollable!.position.pixels;
-    }
+    _dragStartOffsetInScrollables =
+        _mapScrollablesToCurrentOffsets(_registeredScrollables);
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
@@ -185,7 +192,7 @@ class SelectableScopeState extends State<SelectableScope>
     _dragStartInScope = null;
     _dragEndInScope = null;
     _dragEndInScrollableViewport = null;
-    _dragStartInScrollableOffset = null;
+    _dragStartOffsetInScrollables = null;
     _currentScrollable = null;
   }
 
@@ -193,39 +200,69 @@ class SelectableScopeState extends State<SelectableScope>
     _dragStartInScope = null;
     _dragEndInScope = null;
     _dragEndInScrollableViewport = null;
-    _dragStartInScrollableOffset = null;
+    _dragStartOffsetInScrollables = null;
     _currentScrollable = null;
   }
 
   void _updateDragSelection() {
     if (_dragStartInScope == null) return;
     if (_dragEndInScope == null) return;
-    final scrollablePosition = _currentScrollable == null
-        ? Offset.zero
-        : Offset(0, _currentScrollable!.position.pixels);
 
-    _selectRegion(
-      baseOffset: _dragStartInScope!.translate(
-        0,
-        -(scrollablePosition.dy - _dragStartInScrollableOffset!),
-      ),
-      extentOffset: _dragEndInScope!,
-      selectionType: _selectionType,
-    );
+    for (final entry in _registeredSelectablesByScrollables.entries) {
+      final scrollable = entry.key;
+      final selectables = entry.value;
+      if (scrollable == null) {
+        _selectRegion(
+          selectables: selectables,
+          baseOffset: _dragStartInScope!,
+          extentOffset: _dragEndInScope!,
+          selectionType: _selectionType,
+        );
+      } else if (scrollable == _currentScrollable) {
+        final scrollablePosition =
+            Offset(0, _currentScrollable!.position.pixels);
+        _selectRegion(
+          selectables: selectables,
+          baseOffset: _dragStartInScope!.translate(
+            0,
+            -(scrollablePosition.dy -
+                _dragStartOffsetInScrollables![scrollable]!),
+          ),
+          extentOffset: _dragEndInScope!,
+          selectionType: _selectionType,
+        );
+      } else {
+        final scrollablePosition = Offset(0, scrollable.position.pixels);
+
+        _selectRegion(
+          selectables: selectables,
+          baseOffset: _dragStartInScope!.translate(
+            0,
+            -(_dragStartOffsetInScrollables![scrollable]! +
+                scrollablePosition.dy),
+          ),
+          extentOffset: _dragEndInScope!,
+          selectionType: _selectionType,
+        );
+      }
+    }
   }
 
   void _selectRegion({
+    required List<Selectable> selectables,
     required Offset baseOffset,
     required Offset extentOffset,
     required SelectionType selectionType,
   }) {
-    for (final selectable in registeredSelectables) {
+    for (final selectable in selectables) {
       final selectableKey = selectable.key;
       final selectableState = selectableKey.currentState;
       final selectableBox =
           selectableKey.currentContext?.findRenderObject() as RenderBox?;
 
       if (selectableState != null && selectableBox != null) {
+        if (!selectableBox.hasSize) continue;
+        if (!selectableState.mounted) continue;
         final localBaseOffset = selectableBox.globalToLocal(
           baseOffset,
           ancestor: context.findRenderObject(),
@@ -234,7 +271,10 @@ class SelectableScopeState extends State<SelectableScope>
           extentOffset,
           ancestor: context.findRenderObject(),
         );
-
+        if (localBaseOffset == Offset.zero &&
+            localExtentOffset == Offset.zero) {
+          continue;
+        }
         final selectableSelection = selectableState.getSelectionInRange(
           localBaseOffset,
           localExtentOffset,
@@ -242,9 +282,10 @@ class SelectableScopeState extends State<SelectableScope>
 
         if (selectableSelection == null) {
           selectableState.updateSelection(selectableState.getVoidSelection());
+
           continue;
         }
-
+        // TODO: Handle selection type variations
         SelectableSelection adjustedSelection = selectableSelection;
 
         if (_selectionType == SelectionType.paragraph) {
@@ -347,6 +388,7 @@ class SelectableScopeState extends State<SelectableScope>
       final box =
           selectable.key.currentContext?.findRenderObject() as RenderBox?;
       if (box == null) continue;
+      if (!box.hasSize) continue;
       final size = box.size;
       final offset =
           box.localToGlobal(Offset.zero, ancestor: context.findRenderObject());
@@ -428,6 +470,28 @@ class SelectableScopeState extends State<SelectableScope>
     return targetScrollable;
   }
 
+  Map<ScrollableState, double> _mapScrollablesToCurrentOffsets(
+    List<ScrollableState> scrollables,
+  ) {
+    final _scrollablesAndOffsets = <ScrollableState, double>{};
+
+    for (final scrollable in scrollables) {
+      _scrollablesAndOffsets[scrollable] = scrollable.position.pixels;
+    }
+
+    return _scrollablesAndOffsets;
+  }
+
+  Map<ScrollableState?, List<Selectable>>
+      get _registeredSelectablesByScrollables {
+    return groupBy<Selectable, ScrollableState?>(
+      registeredSelectables,
+      (selectable) {
+        return selectable.parentScrollable;
+      },
+    );
+  }
+
   Offset? _getPositionInScrollable(
     ScrollableState scrollable,
     Offset globalPosition,
@@ -440,8 +504,8 @@ class SelectableScopeState extends State<SelectableScope>
   }
 
   void _scrollIfNearBoundary() {
-    assert(_dragEndInScrollableViewport != null);
     if (_currentScrollable == null) return;
+    assert(_dragEndInScrollableViewport != null);
     final scrollableBox =
         _currentScrollable!.context.findRenderObject()! as RenderBox;
 
@@ -464,7 +528,9 @@ class SelectableScopeState extends State<SelectableScope>
     }
 
     _scrollUpOnTick = true;
-    _ticker.start();
+    if (!_ticker.isTicking) {
+      _ticker.start();
+    }
   }
 
   void _stopScrollingUp() {
@@ -497,7 +563,9 @@ class SelectableScopeState extends State<SelectableScope>
     }
 
     _scrollDownOnTick = true;
-    _ticker.start();
+    if (!_ticker.isTicking) {
+      _ticker.start();
+    }
   }
 
   void _stopScrollingDown() {
@@ -510,7 +578,7 @@ class SelectableScopeState extends State<SelectableScope>
   }
 
   void _scrollDown(ScrollableState scrollable) {
-    assert(_dragEndInScrollableViewport != null);
+    if (_dragEndInScrollableViewport == null) return;
 
     if (scrollable.position.pixels >= scrollable.position.maxScrollExtent) {
       return;

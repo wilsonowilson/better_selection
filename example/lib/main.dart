@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart' hide SelectableText;
+
 import 'package:super_selection/super_selection.dart';
 
 void main() {
@@ -28,80 +29,119 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SelectableScope(
       child: Scaffold(
-        body: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Card(
-                  margin: EdgeInsets.zero,
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
-                      children: [
-                        _buildText(
-                          'Example',
-                          const TextStyle(
-                            fontSize: 16,
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const Spacer(),
-                        _buildText('Home'),
-                        const SizedBox(width: 8),
-                        _buildText('About'),
-                        const SizedBox(width: 8),
-                        _buildText('Contact'),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                _buildText(
-                  'An Awesome Headline',
-                  const TextStyle(
-                    fontSize: 24,
-                    color: Colors.black,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                _buildText(lipsumLg),
-                const SizedBox(height: 12),
-                _buildText(lipsumLg),
-                const SizedBox(height: 12),
-                _buildText(lipsumLg),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: BoxSelectable(
-                        child: Image.network(imageLink),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: BoxSelectable(
-                        child: Image.network(imageLink2),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 4),
-                Center(child: _buildText('Example Carousel')),
-                const SizedBox(height: 12),
-                _buildText(lipsumLg),
-              ],
-            ),
+        body: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: const [
+              _Header(),
+              Expanded(
+                child: SingleChildScrollView(child: _ArticleLayout()),
+              )
+            ],
           ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildText(String text, [TextStyle? style]) {
+class _ArticleLayout extends StatelessWidget {
+  const _ArticleLayout({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 24),
+        const _TextWidget(
+          'An Awesome Headline',
+          style: TextStyle(
+            fontSize: 24,
+            color: Colors.black,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        const _TextWidget(lipsumLg),
+        const SizedBox(height: 12),
+        const _TextWidget(lipsumLg),
+        const SizedBox(height: 12),
+        const _TextWidget(lipsumLg),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: BoxSelectable(
+                child: Image.network(imageLink),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: BoxSelectable(
+                child: Image.network(imageLink2),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        const Center(child: _TextWidget('Example Carousel')),
+        const SizedBox(height: 12),
+        const _TextWidget(lipsumLg),
+      ],
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  const _Header({
+    Key? key,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: const [
+            _TextWidget(
+              'Example',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.black,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            Spacer(),
+            _TextWidget('Home'),
+            SizedBox(width: 8),
+            _TextWidget('About'),
+            SizedBox(width: 8),
+            _TextWidget('Contact'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _TextWidget extends StatelessWidget {
+  const _TextWidget(
+    this.text, {
+    Key? key,
+    this.style,
+  }) : super(key: key);
+
+  final String text;
+  final TextStyle? style;
+  @override
+  Widget build(BuildContext context) {
     return TextSelectable(
       textSpan: TextSpan(
         text: text,
