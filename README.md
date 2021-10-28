@@ -2,7 +2,9 @@
 
 Experimental solution for web-like text selection across widgets (text, images, et cetera).
 
-Better selection is depends on, and is heavily inspired by [super_editor](https://github.com/superlistapp/super_editor). It uses super_editor's `SuperSelectableText` which allows a text selection to be passed in as an argument, as well as `TapSequenceGestureRecognizer` for tripple click support.
+![Demo Video](https://res.cloudinary.com/wilson-wilson/image/upload/v1635447167/example_pra3dp.webp)
+
+Better selection is dependent on, and is heavily inspired by [super_editor](https://github.com/superlistapp/super_editor). It uses super_editor's `SuperSelectableText` which allows a text selection to be passed in as an argument, as well as `TapSequenceGestureRecognizer` for tripple click support.
 
 This package is nowhere near stable, and many APIs may change in the near future.
 
@@ -10,6 +12,7 @@ This package is nowhere near stable, and many APIs may change in the near future
 
 - Limited scrollable support. Nested scrollviews and multiple scrollviews in a scope may behave unnaturally.
 - No "multiple column layout" support. Using a scope on a Row behaves very differently from how it would on web.
+- No mobile support
 
 ## Installation
 
