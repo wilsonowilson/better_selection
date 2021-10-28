@@ -24,7 +24,7 @@ abstract class SelectableWidget extends StatefulWidget {
 }
 
 abstract class SelectableWidgetState<T extends SelectableWidget>
-    extends State<T> {
+    extends State<T> with AutomaticKeepAliveClientMixin {
   /// The selection of the selectable.
   SelectableSelection get selection;
 
@@ -66,9 +66,13 @@ abstract class SelectableWidgetState<T extends SelectableWidget>
 
   Widget buildContent(BuildContext context);
 
+  @override
+  bool get wantKeepAlive => true;
+
   @nonVirtual
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return _SelectableRegistrar(
       details: details,
       child: buildContent(context),
