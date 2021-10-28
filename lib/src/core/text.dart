@@ -1,18 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:super_selection/src/core/selectable.dart';
 import 'package:super_selection/src/core/selection.dart';
 
-class TextElementPosition extends TextPosition implements ElementPosition {
-  const TextElementPosition({
+class TextSelectablePosition extends TextPosition
+    implements SelectablePosition {
+  const TextSelectablePosition({
     required int offset,
     TextAffinity affinity = TextAffinity.downstream,
   }) : super(offset: offset, affinity: affinity);
 
-  TextElementPosition.fromTextPosition(TextPosition position)
+  TextSelectablePosition.fromTextPosition(TextPosition position)
       : super(offset: position.offset, affinity: position.affinity);
 }
 
-class TextElementSelection extends TextSelection implements ElementSelection {
-  const TextElementSelection({
+class TextSelectableSelection extends TextSelection
+    implements SelectableSelection {
+  const TextSelectableSelection({
     required int baseOffset,
     required int extentOffset,
     TextAffinity affinity = TextAffinity.downstream,
@@ -24,7 +27,7 @@ class TextElementSelection extends TextSelection implements ElementSelection {
           isDirectional: isDirectional,
         );
 
-  const TextElementSelection.collapsed({
+  const TextSelectableSelection.collapsed({
     required int offset,
     TextAffinity affinity = TextAffinity.downstream,
   }) : super(
@@ -33,7 +36,7 @@ class TextElementSelection extends TextSelection implements ElementSelection {
           affinity: affinity,
         );
 
-  TextElementSelection.fromTextSelection(TextSelection textSelection)
+  TextSelectableSelection.fromTextSelection(TextSelection textSelection)
       : super(
           baseOffset: textSelection.baseOffset,
           extentOffset: textSelection.extentOffset,
@@ -42,32 +45,33 @@ class TextElementSelection extends TextSelection implements ElementSelection {
         );
 
   @override
-  TextElementPosition get base => TextElementPosition(offset: baseOffset);
+  TextSelectablePosition get base => TextSelectablePosition(offset: baseOffset);
 
   @override
-  TextElementPosition get extent => TextElementPosition(offset: extentOffset);
+  TextSelectablePosition get extent =>
+      TextSelectablePosition(offset: extentOffset);
 }
 
-abstract class TextElement {
-  TextElementSelection getWordSelectionAt(
-    TextElementPosition textElementPosition,
+abstract class TextSelectableWidgetState {
+  TextSelectableSelection getWordSelectionAt(
+    TextSelectablePosition textSelectablePosition,
   );
-  TextElementSelection getParagraphSelectionAt(
-    TextElementPosition textElementPosition,
-  );
-
-  TextElementPosition? getPositionOneLineUp(
-    TextElementPosition textElementPosition,
-  );
-  TextElementPosition? getPositionOneLineDown(
-    TextElementPosition textElementPosition,
-  );
-  TextElementPosition getPositionAtStartOfLine(
-    TextElementPosition textElementPosition,
-  );
-  TextElementPosition getPositionAtEndOfLine(
-    TextElementPosition textElementPosition,
+  TextSelectableSelection getParagraphSelectionAt(
+    TextSelectablePosition textSelectablePosition,
   );
 
-  String getContiguousTextAt(TextElementPosition textPosition);
+  TextSelectablePosition? getPositionOneLineUp(
+    TextSelectablePosition textSelectablePosition,
+  );
+  TextSelectablePosition? getPositionOneLineDown(
+    TextSelectablePosition textSelectablePosition,
+  );
+  TextSelectablePosition getPositionAtStartOfLine(
+    TextSelectablePosition textSelectablePosition,
+  );
+  TextSelectablePosition getPositionAtEndOfLine(
+    TextSelectablePosition textSelectablePosition,
+  );
+
+  String getContiguousTextAt(TextSelectablePosition textPosition);
 }

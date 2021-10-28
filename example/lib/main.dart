@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide SelectableText;
 import 'package:super_selection/super_selection.dart';
 
 void main() {
@@ -76,13 +76,13 @@ class MyHomePage extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: BoxElement(
+                    child: BoxSelectable(
                       child: Image.network(imageLink),
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
-                    child: BoxElement(
+                    child: BoxSelectable(
                       child: Image.network(imageLink2),
                     ),
                   ),
@@ -100,7 +100,7 @@ class MyHomePage extends StatelessWidget {
   }
 
   Widget _buildText(String text, [TextStyle? style]) {
-    return SelectableTextElement(
+    return TextSelectable(
       textSpan: TextSpan(
         text: text,
         style: style ??

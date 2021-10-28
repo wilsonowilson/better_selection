@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide SelectableText;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:super_selection/super_selection.dart';
 
@@ -8,7 +8,7 @@ void main() {
         (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: SelectableTextElement(
+          home: TextSelectable(
             textSpan: const TextSpan(
               text: 'Hello world!',
             ),

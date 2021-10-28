@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
 
-import 'element.dart';
+import 'selectable.dart';
 
-/// A logical representation of a position within a selectable element.
+/// A logical representation of a position within a selectable.
 @immutable
-abstract class ElementPosition {
-  const ElementPosition();
+abstract class SelectablePosition {
+  const SelectablePosition();
 }
 
-/// Interface for the selection within a selectable element.
+/// Interface for the selection within a selectable.
 @immutable
-abstract class ElementSelection {
-  const ElementSelection();
+abstract class SelectableSelection {
+  const SelectableSelection();
 }
 
 /// A logical position within a SelectableScope.
 @immutable
 class ScopePosition {
   const ScopePosition({
-    required this.elementDetails,
-    required this.elementPosition,
+    required this.selectable,
+    required this.selectablePosition,
   });
 
-  final ElementPosition elementPosition;
-  final SelectableElementDetails elementDetails;
+  final SelectablePosition selectablePosition;
+  final Selectable selectable;
 }

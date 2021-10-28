@@ -1,20 +1,20 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' hide SelectableText;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:super_selection/super_selection.dart';
 
 void main() {
-  group('SelectableElementRegistrar', () {
-    testWidgets('Registers SelectableElements properly', (tester) async {
+  group('SelectableRegistrar', () {
+    testWidgets('Registers Selectables properly', (tester) async {
       final widget = MaterialApp(
         home: SelectableScope(
           child: Column(
             children: [
-              SelectableTextElement(
+              TextSelectable(
                 textSpan: const TextSpan(
                   text: 'Hello world!',
                 ),
               ),
-              SelectableTextElement(
+              TextSelectable(
                 textSpan: const TextSpan(
                   text: 'Hello world!',
                 ),
@@ -29,9 +29,9 @@ void main() {
       final state = tester.firstState<SelectableScopeState>(
         find.byType(SelectableScope),
       );
-      expect(state.registeredElements.length, equals(2));
+      expect(state.registeredSelectables.length, equals(2));
     });
-    testWidgets('Unregisters Selectable Elements Properly', (tester) async {
+    testWidgets('Unregisters Selectables Properly', (tester) async {
       final notifier = ValueNotifier<bool>(false);
       final widget = MaterialApp(
         home: SelectableScope(
@@ -41,8 +41,7 @@ void main() {
                 valueListenable: notifier,
                 builder: (context, hideWidget, _) {
                   if (hideWidget) return const SizedBox();
-                  return SelectableTextElement(
-                    key: GlobalKey(),
+                  return TextSelectable(
                     textSpan: const TextSpan(
                       text: 'Hello world!',
                     ),
@@ -58,17 +57,17 @@ void main() {
       final state = tester.firstState<SelectableScopeState>(
         find.byType(SelectableScope),
       );
-      expect(state.registeredElements.length, equals(1));
+      expect(state.registeredSelectables.length, equals(1));
 
       notifier.value = true;
       await tester.pump();
 
-      expect(state.registeredElements.length, equals(0));
+      expect(state.registeredSelectables.length, equals(0));
 
       notifier.value = false;
       await tester.pump();
 
-      expect(state.registeredElements.length, equals(1));
+      expect(state.registeredSelectables.length, equals(1));
     });
   });
 }

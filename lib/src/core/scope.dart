@@ -68,22 +68,22 @@ class SelectableScopeState extends State<SelectableScope> {
   }
 
   @visibleForTesting
-  final registeredElements = <SelectableElementDetails>[];
+  final registeredSelectables = <Selectable>[];
 
-  void registerElement(SelectableElementDetails details) {
-    registeredElements.add(details);
+  void registerSelectable(Selectable details) {
+    registeredSelectables.add(details);
   }
 
-  void unregisterElement(SelectableElementDetails details) {
-    registeredElements.remove(details);
+  void unregisterSelectable(Selectable details) {
+    registeredSelectables.remove(details);
   }
 
   _SelectableScopeLayoutResolver get _layoutResolver =>
-      _SelectableScopeLayoutResolver(registeredElements, context);
+      _SelectableScopeLayoutResolver(registeredSelectables, context);
 
   void _clearSelection() {
-    for (final element in registeredElements) {
-      final state = element.key.currentState;
+    for (final selectable in registeredSelectables) {
+      final state = selectable.key.currentState;
 
       if (state == null) continue;
       state.updateSelection(state.getVoidSelection());
@@ -183,47 +183,49 @@ class SelectableScopeState extends State<SelectableScope> {
     required Offset extentOffset,
     required SelectionType selectionType,
   }) {
-    for (final element in registeredElements) {
-      final elementKey = element.key;
-      final elementState = elementKey.currentState;
-      final elementBox =
-          elementKey.currentContext?.findRenderObject() as RenderBox?;
+    for (final selectable in registeredSelectables) {
+      final selectableKey = selectable.key;
+      final selectableState = selectableKey.currentState;
+      final selectableBox =
+          selectableKey.currentContext?.findRenderObject() as RenderBox?;
 
-      if (elementState != null && elementBox != null) {
-        final localBaseOffset = elementBox.globalToLocal(
+      if (selectableState != null && selectableBox != null) {
+        final localBaseOffset = selectableBox.globalToLocal(
           baseOffset,
           ancestor: context.findRenderObject(),
         );
-        final localExtentOffset = elementBox.globalToLocal(
+        final localExtentOffset = selectableBox.globalToLocal(
           extentOffset,
           ancestor: context.findRenderObject(),
         );
 
-        final elementSelection = elementState.getSelectionInRange(
+        final selectableSelection = selectableState.getSelectionInRange(
           localBaseOffset,
           localExtentOffset,
         );
 
-        if (elementSelection == null) {
-          elementState.updateSelection(elementState.getVoidSelection());
+        if (selectableSelection == null) {
+          selectableState.updateSelection(selectableState.getVoidSelection());
           continue;
         }
         // TODO: Handle selection type variations
-        ElementSelection adjustedSelection = elementSelection;
+        SelectableSelection adjustedSelection = selectableSelection;
 
         if (_selectionType == SelectionType.paragraph) {
-          final newSelection = elementState.getExpandedSelection();
+          final newSelection = selectableState.getExpandedSelection();
           adjustedSelection = newSelection;
         } else if (_selectionType == SelectionType.word) {
-          if (elementState is TextElement) {
-            final textElementState = elementState as TextElement;
+          if (selectableState is TextSelectableWidgetState) {
+            final textSelectableState =
+                selectableState as TextSelectableWidgetState;
 
-            final currentSelection = elementSelection as TextElementSelection;
+            final currentSelection =
+                selectableSelection as TextSelectableSelection;
             if (!currentSelection.isValid) break;
             final wordSelectionAtBase =
-                textElementState.getWordSelectionAt(currentSelection.base);
+                textSelectableState.getWordSelectionAt(currentSelection.base);
             final wordSelectionAtExtent =
-                textElementState.getWordSelectionAt(currentSelection.extent);
+                textSelectableState.getWordSelectionAt(currentSelection.extent);
 
             final lowerBound = min(
               min(
@@ -239,7 +241,7 @@ class SelectableScopeState extends State<SelectableScope> {
               ),
               wordSelectionAtExtent.end,
             );
-            adjustedSelection = TextElementSelection(
+            adjustedSelection = TextSelectableSelection(
               baseOffset: currentSelection.affinity == TextAffinity.downstream
                   ? lowerBound
                   : upperBound,
@@ -249,45 +251,47 @@ class SelectableScopeState extends State<SelectableScope> {
             );
           }
         }
-        elementState.updateSelection(adjustedSelection);
+        selectableState.updateSelection(adjustedSelection);
       }
     }
   }
 
   void _selectWordAt({required ScopePosition scopePosition}) {
     final position = scopePosition;
-    final elementPosition = position.elementPosition;
-    if (elementPosition is! TextElementPosition) return;
+    final selectablePosition = position.selectablePosition;
+    if (selectablePosition is! TextSelectablePosition) return;
 
-    final state = position.elementDetails.key.currentState as TextElement?;
+    final state =
+        position.selectable.key.currentState as TextSelectableWidgetState?;
 
     if (state == null) return;
 
-    final selection = state.getWordSelectionAt(elementPosition);
+    final selection = state.getWordSelectionAt(selectablePosition);
 
-    (state as SelectableElementWidgetState<SelectableElementWidget>)
+    (state as SelectableWidgetState<SelectableWidget>)
         .updateSelection(selection);
   }
 
   void _selectParagraphAt({required ScopePosition scopePosition}) {
     final position = scopePosition;
-    final elementPosition = position.elementPosition;
-    if (elementPosition is! TextElementPosition) return;
+    final selectablePosition = position.selectablePosition;
+    if (selectablePosition is! TextSelectablePosition) return;
 
-    final state = position.elementDetails.key.currentState as TextElement?;
+    final state =
+        position.selectable.key.currentState as TextSelectableWidgetState?;
     if (state == null) return;
-    final selection = state.getParagraphSelectionAt(elementPosition);
+    final selection = state.getParagraphSelectionAt(selectablePosition);
 
-    (state as SelectableElementWidgetState<SelectableElementWidget>)
-        .updateSelection(TextElementSelection.fromTextSelection(selection));
+    (state as SelectableWidgetState<SelectableWidget>)
+        .updateSelection(TextSelectableSelection.fromTextSelection(selection));
   }
 
   void _onMouseMove(PointerEvent pointerEvent) {
     _updateCursorStyle(pointerEvent.position);
   }
 
-  List<SelectableElementDetails> _sortElementsByPosition() {
-    final elementList = registeredElements
+  List<Selectable> _sortSelectablesByPosition() {
+    final selectableList = registeredSelectables
       ..sort((a, b) {
         final aBox = a.key.currentContext!.findRenderObject()! as RenderBox;
         final bBox = b.key.currentContext!.findRenderObject()! as RenderBox;
@@ -298,13 +302,14 @@ class SelectableScopeState extends State<SelectableScope> {
         return aPos.compareTo(bPos);
       });
 
-    return elementList;
+    return selectableList;
   }
 
   void _updateCursorStyle(Offset cursorOffset) {
-    SelectableElementDetails? elementAboveCursor;
-    for (final element in registeredElements) {
-      final box = element.key.currentContext?.findRenderObject() as RenderBox?;
+    Selectable? selectableAboveCursor;
+    for (final selectable in registeredSelectables) {
+      final box =
+          selectable.key.currentContext?.findRenderObject() as RenderBox?;
       if (box == null) continue;
       final size = box.size;
       final offset =
@@ -312,24 +317,24 @@ class SelectableScopeState extends State<SelectableScope> {
       final rect = Rect.fromLTWH(offset.dx, offset.dy, size.width, size.height);
 
       if (rect.contains(cursorOffset)) {
-        elementAboveCursor = element;
+        selectableAboveCursor = selectable;
         break;
       }
     }
 
-    if (elementAboveCursor == null) {
+    if (selectableAboveCursor == null) {
       setState(() {
         _cursorStyle = MouseCursor.defer;
       });
       return;
     }
 
-    final box =
-        elementAboveCursor.key.currentContext!.findRenderObject()! as RenderBox;
+    final box = selectableAboveCursor.key.currentContext!.findRenderObject()!
+        as RenderBox;
 
     final localOffset = box.globalToLocal(cursorOffset);
     final desiredCursor =
-        elementAboveCursor.key.currentState!.getCursorAtOffset(localOffset);
+        selectableAboveCursor.key.currentState!.getCursorAtOffset(localOffset);
 
     if (desiredCursor == null) {
       setState(() {
@@ -343,9 +348,9 @@ class SelectableScopeState extends State<SelectableScope> {
 
   String _getSelectedText() {
     final buffer = StringBuffer();
-    final sortedElements = _sortElementsByPosition();
-    for (final element in sortedElements) {
-      final state = element.key.currentState;
+    final sortedSelectables = _sortSelectablesByPosition();
+    for (final selectable in sortedSelectables) {
+      final state = selectable.key.currentState;
       if (state == null) continue;
       final currentSelection = state.selection;
       final text = state.serializeSelection(currentSelection);
@@ -428,38 +433,38 @@ class SelectableScopeState extends State<SelectableScope> {
 
 class _SelectableScopeLayoutResolver {
   const _SelectableScopeLayoutResolver(
-    this._elements,
+    this._selectables,
     this.context,
   );
-  final List<SelectableElementDetails> _elements;
+  final List<Selectable> _selectables;
   final BuildContext context;
 
   ScopePosition? getScopePositionAtOffset(Offset globalPosition) {
-    final element = findElementAtOffset(globalPosition);
-    if (element == null) return null;
-    final elementKey = element.key;
-    final state = elementKey.currentState!;
-    final box = elementKey.currentContext!.findRenderObject()! as RenderBox;
+    final selectable = findSelectableAtOffset(globalPosition);
+    if (selectable == null) return null;
+    final selectableKey = selectable.key;
+    final state = selectableKey.currentState!;
+    final box = selectableKey.currentContext!.findRenderObject()! as RenderBox;
 
     final offset = box.globalToLocal(globalPosition);
 
     final position = state.getPositionAtOffset(offset);
 
-    return ScopePosition(elementDetails: element, elementPosition: position);
+    return ScopePosition(selectable: selectable, selectablePosition: position);
   }
 
-  SelectableElementDetails? findElementAtOffset(Offset offset) {
-    for (final element in _elements) {
-      final key = element.key;
+  Selectable? findSelectableAtOffset(Offset offset) {
+    for (final selectable in _selectables) {
+      final key = selectable.key;
 
       if (key.currentState == null ||
-          key.currentState is! SelectableElementWidgetState) continue;
+          key.currentState is! SelectableWidgetState) continue;
       if (key.currentContext == null) continue;
 
       final box = key.currentContext!.findRenderObject()! as RenderBox;
 
       if (_isOffsetInBox(box, offset)) {
-        return element;
+        return selectable;
       }
     }
   }
