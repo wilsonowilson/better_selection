@@ -123,17 +123,13 @@ class _BinarySelectableState extends SelectableWidgetState<BoxSelectable> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return SelectableRegistrar(
-      details: details,
-      child: Container(
-        foregroundDecoration: BoxDecoration(
-          color: _selection.position.included
-              ? Colors.blue.withOpacity(0.3)
-              : null,
-        ),
-        child: widget.child,
+  Widget buildContent(BuildContext context) {
+    return Container(
+      foregroundDecoration: BoxDecoration(
+        color:
+            _selection.position.included ? Colors.blue.withOpacity(0.3) : null,
       ),
+      child: widget.child,
     );
   }
 }

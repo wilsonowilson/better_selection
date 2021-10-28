@@ -169,14 +169,11 @@ class _TextSelectableState extends SelectableWidgetState<TextSelectable>
   }
 
   @override
-  Widget build(BuildContext context) {
-    return SelectableRegistrar(
-      details: details,
-      child: SuperSelectableText(
-        key: _selectableTextKey,
-        textSpan: widget.textSpan,
-        textSelection: _selection,
-      ),
+  Widget buildContent(BuildContext context) {
+    return SuperSelectableText(
+      key: _selectableTextKey,
+      textSpan: widget.textSpan,
+      textSelection: _selection,
     );
   }
 

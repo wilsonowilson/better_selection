@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:super_selection/src/core/scope.dart';
 
@@ -7,8 +8,10 @@ import 'package:super_selection/src/core/selection.dart';
 class Selectable {
   const Selectable({
     required this.key,
+    this.parentScrollable,
   });
   final GlobalKey<SelectableWidgetState> key;
+  final ScrollableState? parentScrollable;
 }
 
 abstract class SelectableWidget extends StatefulWidget {
@@ -25,9 +28,13 @@ abstract class SelectableWidgetState<T extends SelectableWidget>
   /// The selection of the selectable.
   SelectableSelection get selection;
 
-  Selectable get details => Selectable(
-        key: widget.key! as GlobalKey<SelectableWidgetState>,
-      );
+  Selectable get details {
+    final scrollable = Scrollable.of(context);
+    return Selectable(
+      key: widget.key! as GlobalKey<SelectableWidgetState>,
+      parentScrollable: scrollable,
+    );
+  }
 
   SelectableSelection getVoidSelection();
 
@@ -56,13 +63,22 @@ abstract class SelectableWidgetState<T extends SelectableWidget>
 
   /// Update the selection of the [SelectableSelectable].
   void updateSelection(SelectableSelection selection);
+
+  Widget buildContent(BuildContext context);
+
+  @nonVirtual
+  @override
+  Widget build(BuildContext context) {
+    return _SelectableRegistrar(
+      details: details,
+      child: buildContent(context),
+    );
+  }
 }
 
 /// Registers [SelectableSelectable]s with the [SelectableScope]. It also
 /// uses the key provided by the [details].
 ///
-/// To use this, wrap the widget in the build method of your [SelectableSelectable]
-/// in a [SelectableRegistrar]. Ex.
 ///
 /// ```dart
 ///   ...
@@ -74,8 +90,8 @@ abstract class SelectableWidgetState<T extends SelectableWidget>
 ///     );
 ///  }
 /// ```
-class SelectableRegistrar extends StatefulWidget {
-  const SelectableRegistrar({
+class _SelectableRegistrar extends StatefulWidget {
+  const _SelectableRegistrar({
     Key? key,
     required this.child,
     required this.details,
@@ -87,7 +103,7 @@ class SelectableRegistrar extends StatefulWidget {
   _SelectableRegistrarState createState() => _SelectableRegistrarState();
 }
 
-class _SelectableRegistrarState extends State<SelectableRegistrar> {
+class _SelectableRegistrarState extends State<_SelectableRegistrar> {
   late final SelectableScopeState _scope;
   @override
   void initState() {
@@ -103,7 +119,7 @@ class _SelectableRegistrarState extends State<SelectableRegistrar> {
   }
 
   @override
-  void didUpdateWidget(SelectableRegistrar oldWidget) {
+  void didUpdateWidget(_SelectableRegistrar oldWidget) {
     if (oldWidget.details != widget.details) {
       _unregisterSelectable(oldWidget.details);
       _registerSelectable(widget.details);
