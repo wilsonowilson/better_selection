@@ -1,6 +1,6 @@
+import 'package:better_selection/better_selection.dart';
 import 'package:flutter/material.dart' hide SelectableText;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:super_selection/super_selection.dart';
 
 void main() {
   group('SelectableRegistrar', () {

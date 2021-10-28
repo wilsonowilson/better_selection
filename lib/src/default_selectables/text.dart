@@ -1,15 +1,21 @@
+import 'package:better_selection/src/core/selectable.dart';
+import 'package:better_selection/src/core/selection.dart';
+import 'package:better_selection/src/core/text.dart';
 import 'package:flutter/material.dart';
 import 'package:super_editor/super_editor.dart';
-
-import 'package:super_selection/src/core/selectable.dart';
-import 'package:super_selection/src/core/selection.dart';
-import 'package:super_selection/src/core/text.dart';
 
 class TextSelectable extends SelectableWidget {
   TextSelectable({
     GlobalKey<SelectableWidgetState>? key,
     required this.textSpan,
   }) : super(key: key ?? GlobalKey<SelectableWidgetState>());
+
+  TextSelectable.plain(
+    String text, {
+    TextStyle? style,
+    GlobalKey<SelectableWidgetState>? key,
+  })  : textSpan = TextSpan(text: text, style: style),
+        super(key: key ?? GlobalKey<SelectableWidgetState>());
 
   final TextSpan textSpan;
 

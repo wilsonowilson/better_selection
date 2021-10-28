@@ -1,7 +1,6 @@
+import 'package:better_selection/src/core/selectable.dart';
+import 'package:better_selection/src/core/selection.dart';
 import 'package:flutter/material.dart';
-
-import 'package:super_selection/src/core/selectable.dart';
-import 'package:super_selection/src/core/selection.dart';
 
 class BinarySelectablePosition extends SelectablePosition {
   const BinarySelectablePosition.included() : included = true;
@@ -30,10 +29,10 @@ class BoxSelectable extends SelectableWidget {
   final Widget child;
 
   @override
-  _BinarySelectableState createState() => _BinarySelectableState();
+  _BoxSelectableState createState() => _BoxSelectableState();
 }
 
-class _BinarySelectableState extends SelectableWidgetState<BoxSelectable> {
+class _BoxSelectableState extends SelectableWidgetState<BoxSelectable> {
   BinarySelectableSelection _selection = const BinarySelectableSelection.none();
 
   @override

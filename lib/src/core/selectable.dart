@@ -1,8 +1,7 @@
+import 'package:better_selection/src/core/scope.dart';
+import 'package:better_selection/src/core/selection.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:super_selection/src/core/scope.dart';
-
-import 'package:super_selection/src/core/selection.dart';
 
 /// Details used to identify a [SelectableWidget].
 class Selectable {

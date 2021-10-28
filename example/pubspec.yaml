@@ -10,7 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.2
-  super_selection:
+  better_selection:
     path: ../
 
 dev_dependencies:

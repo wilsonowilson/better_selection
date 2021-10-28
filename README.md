@@ -1,39 +1,76 @@
-<!-- 
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# Better Selection
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/guides/libraries/writing-package-pages). 
+Experimental solution for web-like text selection across widgets (text, images, et cetera).
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-library-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/developing-packages). 
--->
+Better selection is depends on, and is heavily inspired by [super_editor](https://github.com/superlistapp/super_editor). It uses super_editor's `SuperSelectableText` which allows a text selection to be passed in as an argument, as well as `TapSequenceGestureRecognizer` for tripple click support.
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+This package is nowhere near stable, and many APIs may change in the near future.
 
-## Features
+## Limitations
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- Limited scrollable support. Nested scrollviews and multiple scrollviews in a scope may behave unnaturally.
+- No "multiple column layout" support. Using a scope on a Row behaves very differently from how it would on web.
 
-## Getting started
+## Installation
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+To get started, add the git dependency to your pubspec.yaml.
+
+```yaml
+better_selection:
+  git:
+    url: git://github.com/wilsonowilson/better_selection.git
+    ref: main
+```
+
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder. 
+### Add the SelectableScope widget 
+
+Before doing anything, you must insert the `SelectableScope` widget in your widget tree. You can place this widget wherever you want multiple text selection to take place.
+
 
 ```dart
-const like = 'sample';
+class Screen extends StatelessWidget {
+  const Screen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SelectableScope(
+      child: Scaffold(
+        body: Column(
+          children: [
+             ...
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+All child widgets that implement `SelectableWidget` can now be selected accross the scope.
+
+### Default Selectable Widgets
+
+By default, better_selection comes with two selectable widgets out of the box.
+
+#### TextSelectable
+
+A plain text widget. Also supports rich text.
+
+```dart
+ TextSelectable.plain('Lorem ipsum')
 ```
 
-## Additional information
+#### BoxSelectable
 
-TODO: Tell users more about the package: where to find more information, how to 
-contribute to the package, how to file issues, what response they can expect 
-from the package authors, and more.
+A SelectableWidget that allows its child to be selected. Example use cases would be copying images and icons. You can specify the copied text using the `text` parameter.
+
+```dart
+BoxSelectable(
+  // Making the copyable text html enables 
+  // inter-application image pasting.
+  text: '<img src="$imageLink">',
+  child: Image.network(imageLink),
+),
+```

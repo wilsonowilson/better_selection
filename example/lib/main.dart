@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart' hide SelectableText;
 
-import 'package:super_selection/super_selection.dart';
+import 'package:better_selection/better_selection.dart';
 
 void main() {
   runApp(const MyApp());
@@ -18,6 +18,21 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: const MyHomePage(),
+    );
+  }
+}
+
+class Screen extends StatelessWidget {
+  const Screen({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return SelectableScope(
+      child: Scaffold(
+        body: Column(
+          children: const [],
+        ),
+      ),
     );
   }
 }
@@ -83,6 +98,7 @@ class _ArticleLayout extends StatelessWidget {
             const SizedBox(width: 8),
             Expanded(
               child: BoxSelectable(
+                text: '<img src="$imageLink">',
                 child: Image.network(imageLink2),
               ),
             ),

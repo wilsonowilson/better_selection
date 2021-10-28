@@ -1,16 +1,16 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:better_selection/src/core/selectable.dart';
+import 'package:better_selection/src/core/selection.dart';
+import 'package:better_selection/src/core/text.dart';
+import 'package:better_selection/src/infrastructure/platform.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:super_editor/super_editor.dart';
-import 'package:super_selection/src/core/text.dart';
-import 'package:super_selection/src/infrastructure/platform.dart';
-
-import 'package:super_selection/super_selection.dart';
 
 class SelectableScope extends StatefulWidget {
   const SelectableScope({

@@ -1,8 +1,8 @@
-name: super_selection
+name: better_selection
 description: Web-like text selection. Built on super_editor
 version: 0.0.1
 publish_to: none
-homepage: null
+homepage: https://github.com/wilsonowilson/better_selection
 
 environment:
   sdk: ">=2.15.0-233.0.dev <3.0.0"
