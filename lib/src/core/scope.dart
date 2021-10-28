@@ -1,7 +1,10 @@
 import 'dart:math';
+import 'dart:ui';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:super_editor/super_editor.dart';
 import 'package:super_selection/src/core/text.dart';
@@ -54,17 +57,31 @@ class SelectableScope extends StatefulWidget {
   }
 }
 
-class SelectableScopeState extends State<SelectableScope> {
+class SelectableScopeState extends State<SelectableScope>
+    with SingleTickerProviderStateMixin {
   SelectionType _selectionType = SelectionType.position;
   Offset? _dragStartInScope;
   Offset? _dragEndInScope;
+
+  double? _dragStartInScrollableOffset;
+  Offset? _dragEndInScrollableViewport;
+  ScrollableState? _currentScrollable;
+
   MouseCursor? _cursorStyle;
   late FocusNode _focusNode;
+
+  bool _scrollUpOnTick = false;
+  bool _scrollDownOnTick = false;
+  late Ticker _ticker;
+
+  final _dragGutterExtent = 100;
+  final _maxDragSpeed = 20;
 
   @override
   void initState() {
     super.initState();
     _focusNode = FocusNode();
+    _ticker = createTicker(_onTick);
   }
 
   @visibleForTesting
@@ -140,39 +157,56 @@ class SelectableScopeState extends State<SelectableScope> {
   }
 
   void _onPanStart(DragStartDetails details) {
+    _currentScrollable = _getTargetScrollable(details.globalPosition);
+
     _dragStartInScope = details.globalPosition;
+
     _clearSelection();
     _focusNode.requestFocus();
+
+    if (_currentScrollable != null) {
+      _dragStartInScrollableOffset = _currentScrollable!.position.pixels;
+    }
   }
 
   void _onPanUpdate(DragUpdateDetails details) {
-    setState(() {
-      _dragEndInScope = details.globalPosition;
+    _dragEndInScope = details.globalPosition;
 
-      _updateDragSelection();
-    });
+    if (_currentScrollable != null) {
+      _dragEndInScrollableViewport =
+          _getPositionInScrollable(_currentScrollable!, details.globalPosition);
+    }
+
+    _updateDragSelection();
+    _scrollIfNearBoundary();
   }
 
   void _onPanEnd(DragEndDetails details) {
-    setState(() {
-      _dragStartInScope = null;
-      _dragEndInScope = null;
-    });
+    _dragStartInScope = null;
+    _dragEndInScope = null;
+    _dragEndInScrollableViewport = null;
+    _currentScrollable = null;
   }
 
   void _onPanCancel() {
-    setState(() {
-      _dragStartInScope = null;
-      _dragEndInScope = null;
-    });
+    _dragStartInScope = null;
+    _dragEndInScope = null;
+    _dragEndInScrollableViewport = null;
+    _currentScrollable = null;
   }
 
   void _updateDragSelection() {
     if (_dragStartInScope == null) return;
     if (_dragEndInScope == null) return;
+    final scrollablePosition = _currentScrollable == null
+        ? Offset.zero
+        : Offset(0, _currentScrollable!.position.pixels);
 
     _selectRegion(
-      baseOffset: _dragStartInScope!,
+      baseOffset: _dragStartInScope!.translate(
+        0,
+        -(scrollablePosition.dy - _dragStartInScrollableOffset!),
+      ),
       extentOffset: _dragEndInScope!,
       selectionType: _selectionType,
     );
@@ -361,6 +395,143 @@ class SelectableScopeState extends State<SelectableScope> {
       }
     }
     return buffer.toString();
+  }
+
+  List<ScrollableState> get _registeredScrollables {
+    return registeredSelectables
+        .map((e) => e.parentScrollable)
+        .whereNotNull()
+        .toSet()
+        .toList();
+  }
+
+  // The scrollable which should be affected by scrolling up or down
+  // is the first scrollable at the point where drags start.
+  ScrollableState? _getTargetScrollable(Offset globalPosition) {
+    ScrollableState? targetScrollable;
+
+    for (final scrollable in _registeredScrollables) {
+      final size = scrollable.context.size;
+      final box = scrollable.context.findRenderObject() as RenderBox?;
+
+      if (size == null || box == null) continue;
+
+      final offset = box.localToGlobal(Offset.zero);
+
+      final rect = Rect.fromLTWH(offset.dx, offset.dy, size.width, size.height);
+
+      if (rect.contains(globalPosition)) targetScrollable = scrollable;
+    }
+
+    return targetScrollable;
+  }
+
+  Offset? _getPositionInScrollable(
+    ScrollableState scrollable,
+    Offset globalPosition,
+  ) {
+    final box = scrollable.context.findRenderObject() as RenderBox?;
+
+    if (box == null) return null;
+
+    return box.globalToLocal(globalPosition);
+  }
+
+  void _scrollIfNearBoundary() {
+    assert(_dragEndInScrollableViewport != null);
+    if (_currentScrollable == null) return;
+    final scrollableBox =
+        _currentScrollable!.context.findRenderObject()! as RenderBox;
+
+    if (_dragEndInScrollableViewport!.dy < _dragGutterExtent) {
+      _startScrollingUp();
+    } else {
+      _stopScrollingUp();
+    }
+    if (scrollableBox.size.height - _dragEndInScrollableViewport!.dy <
+        _dragGutterExtent) {
+      _startScrollingDown();
+    } else {
+      _stopScrollingDown();
+    }
+  }
+
+  void _startScrollingUp() {
+    if (_scrollUpOnTick) {
+      return;
+    }
+
+    _scrollUpOnTick = true;
+    _ticker.start();
+  }
+
+  void _stopScrollingUp() {
+    if (!_scrollUpOnTick) {
+      return;
+    }
+
+    _scrollUpOnTick = false;
+    _ticker.stop();
+  }
+
+  void _scrollUp(ScrollableState scrollable) {
+    if (_dragEndInScrollableViewport == null) return;
+
+    if (scrollable.position.pixels <= 0) {
+      return;
+    }
+
+    final gutterAmount =
+        _dragEndInScrollableViewport!.dy.clamp(0.0, _dragGutterExtent);
+    final speedPercent = 1.0 - (gutterAmount / _dragGutterExtent);
+    final scrollAmount = lerpDouble(0, _maxDragSpeed, speedPercent);
+
+    scrollable.position.jumpTo(scrollable.position.pixels - scrollAmount!);
+  }
+
+  void _startScrollingDown() {
+    if (_scrollDownOnTick) {
+      return;
+    }
+
+    _scrollDownOnTick = true;
+    _ticker.start();
+  }
+
+  void _stopScrollingDown() {
+    if (!_scrollDownOnTick) {
+      return;
+    }
+
+    _scrollDownOnTick = false;
+    _ticker.stop();
+  }
+
+  void _scrollDown(ScrollableState scrollable) {
+    assert(_dragEndInScrollableViewport != null);
+
+    if (scrollable.position.pixels >= scrollable.position.maxScrollExtent) {
+      return;
+    }
+
+    final scrollableBox = scrollable.context.findRenderObject()! as RenderBox;
+    final gutterAmount =
+        (scrollableBox.size.height - _dragEndInScrollableViewport!.dy)
+            .clamp(0.0, _dragGutterExtent);
+    final speedPercent = 1.0 - (gutterAmount / _dragGutterExtent);
+    final scrollAmount = lerpDouble(0, _maxDragSpeed, speedPercent);
+
+    scrollable.position.jumpTo(scrollable.position.pixels + scrollAmount!);
+  }
+
+  void _onTick(elapsedTime) {
+    if (_currentScrollable == null) return;
+    if (_scrollUpOnTick) {
+      _scrollUp(_currentScrollable!);
+    }
+    if (_scrollDownOnTick) {
+      _scrollDown(_currentScrollable!);
+    }
   }
 
   @override

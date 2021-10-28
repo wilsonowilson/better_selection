@@ -28,71 +28,73 @@ class MyHomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return SelectableScope(
       child: Scaffold(
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Card(
-                margin: EdgeInsets.zero,
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Row(
-                    children: [
-                      _buildText(
-                        'Example',
-                        const TextStyle(
-                          fontSize: 16,
-                          color: Colors.black,
-                          fontWeight: FontWeight.bold,
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        _buildText(
+                          'Example',
+                          const TextStyle(
+                            fontSize: 16,
+                            color: Colors.black,
+                            fontWeight: FontWeight.bold,
+                          ),
                         ),
+                        const Spacer(),
+                        _buildText('Home'),
+                        const SizedBox(width: 8),
+                        _buildText('About'),
+                        const SizedBox(width: 8),
+                        _buildText('Contact'),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                _buildText(
+                  'An Awesome Headline',
+                  const TextStyle(
+                    fontSize: 24,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                _buildText(lipsumLg),
+                const SizedBox(height: 12),
+                _buildText(lipsumLg),
+                const SizedBox(height: 12),
+                _buildText(lipsumLg),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: BoxSelectable(
+                        child: Image.network(imageLink),
                       ),
-                      const Spacer(),
-                      _buildText('Home'),
-                      const SizedBox(width: 8),
-                      _buildText('About'),
-                      const SizedBox(width: 8),
-                      _buildText('Contact'),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              _buildText(
-                'An Awesome Headline',
-                const TextStyle(
-                  fontSize: 24,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              _buildText(lipsumLg),
-              const SizedBox(height: 12),
-              _buildText(lipsumLg),
-              const SizedBox(height: 12),
-              _buildText(lipsumLg),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: BoxSelectable(
-                      child: Image.network(imageLink),
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: BoxSelectable(
-                      child: Image.network(imageLink2),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: BoxSelectable(
+                        child: Image.network(imageLink2),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 4),
-              Center(child: _buildText('Example Carousel')),
-              const SizedBox(height: 12),
-              _buildText(lipsumLg),
-            ],
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Center(child: _buildText('Example Carousel')),
+                const SizedBox(height: 12),
+                _buildText(lipsumLg),
+              ],
+            ),
           ),
         ),
       ),

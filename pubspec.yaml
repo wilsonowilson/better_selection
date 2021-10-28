@@ -2,24 +2,25 @@ name: super_selection
 description: Web-like text selection. Built on super_editor
 version: 0.0.1
 publish_to: none
-homepage:
+homepage: null
 
 environment:
   sdk: ">=2.15.0-233.0.dev <3.0.0"
   flutter: ">=1.17.0"
 
 dependencies:
+  collection: ^1.15.0
   flutter:
     sdk: flutter
   super_editor:
     git:
       url: git://github.com/superlistapp/super_editor.git
-      ref: main  
+      ref: main
       path: super_editor
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   lint: ^1.7.2
-  
-flutter:
+
+flutter: null
