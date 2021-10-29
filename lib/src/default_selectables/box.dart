@@ -132,10 +132,12 @@ class _BoxSelectableState extends SelectableWidgetState<BoxSelectable> {
           borderRadius: BorderRadius.circular(16),
         );
     return Container(
-      foregroundDecoration: BoxDecoration(
-        color: decoration.color,
-        borderRadius: decoration.borderRadius,
-      ),
+      foregroundDecoration: _selection.position.included
+          ? BoxDecoration(
+              color: decoration.color,
+              borderRadius: decoration.borderRadius,
+            )
+          : null,
       child: widget.child,
     );
   }
