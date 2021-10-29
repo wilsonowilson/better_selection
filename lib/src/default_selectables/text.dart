@@ -8,16 +8,22 @@ class TextSelectable extends SelectableWidget {
   TextSelectable({
     GlobalKey<SelectableWidgetState>? key,
     required this.textSpan,
+    this.selectableDecoration,
   }) : super(key: key ?? GlobalKey<SelectableWidgetState>());
 
   TextSelectable.plain(
     String text, {
     TextStyle? style,
     GlobalKey<SelectableWidgetState>? key,
-  })  : textSpan = TextSpan(text: text, style: style),
+    this.selectableDecoration,
+  })  : textSpan = TextSpan(
+          text: text,
+          style: style,
+        ),
         super(key: key ?? GlobalKey<SelectableWidgetState>());
 
   final TextSpan textSpan;
+  final TextSelectableDecoration? selectableDecoration;
 
   @override
   _TextSelectableState createState() => _TextSelectableState();
@@ -176,10 +182,19 @@ class _TextSelectableState extends SelectableWidgetState<TextSelectable>
 
   @override
   Widget buildContent(BuildContext context) {
+    final selectionTheme = Theme.of(context).textSelectionTheme;
+    final selectionDecoration = widget.selectableDecoration ??
+        TextSelectableDecoration(
+          selectionColor:
+              selectionTheme.selectionColor ?? Colors.blue.withOpacity(0.3),
+        );
     return SuperSelectableText(
       key: _selectableTextKey,
       textSpan: widget.textSpan,
       textSelection: _selection,
+      textSelectionDecoration: TextSelectionDecoration(
+        selectionColor: selectionDecoration.selectionColor,
+      ),
     );
   }
 
@@ -190,4 +205,11 @@ class _TextSelectableState extends SelectableWidgetState<TextSelectable>
 
     if (offsetOverlapsText) return SystemMouseCursors.text;
   }
+}
+
+class TextSelectableDecoration {
+  const TextSelectableDecoration({
+    required this.selectionColor,
+  });
+  final Color selectionColor;
 }

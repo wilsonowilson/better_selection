@@ -23,10 +23,12 @@ class BoxSelectable extends SelectableWidget {
     GlobalKey<SelectableWidgetState>? key,
     this.text = '',
     required this.child,
+    this.selectableDecoration,
   }) : super(key: key ?? GlobalKey<SelectableWidgetState>());
 
   final String text;
   final Widget child;
+  final BoxSelectableDecoration? selectableDecoration;
 
   @override
   _BoxSelectableState createState() => _BoxSelectableState();
@@ -123,12 +125,28 @@ class _BoxSelectableState extends SelectableWidgetState<BoxSelectable> {
 
   @override
   Widget buildContent(BuildContext context) {
+    final selectionTheme = Theme.of(context).textSelectionTheme;
+    final decoration = widget.selectableDecoration ??
+        BoxSelectableDecoration(
+          color: selectionTheme.selectionColor ?? Colors.blue.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(16),
+        );
     return Container(
       foregroundDecoration: BoxDecoration(
-        color:
-            _selection.position.included ? Colors.blue.withOpacity(0.3) : null,
+        color: decoration.color,
+        borderRadius: decoration.borderRadius,
       ),
       child: widget.child,
     );
   }
+}
+
+class BoxSelectableDecoration {
+  const BoxSelectableDecoration({
+    required this.color,
+    required this.borderRadius,
+  });
+
+  final Color color;
+  final BorderRadius borderRadius;
 }

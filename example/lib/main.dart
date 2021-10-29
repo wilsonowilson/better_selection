@@ -15,8 +15,10 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+          primarySwatch: Colors.blue,
+          textSelectionTheme: TextSelectionThemeData(
+            selectionColor: Colors.indigo.withOpacity(0.3),
+          )),
       home: const MyHomePage(),
     );
   }
@@ -49,6 +51,7 @@ class MyHomePage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: const [
+              SizedBox(height: 12),
               _Header(),
               Expanded(
                 child: SingleChildScrollView(child: _ArticleLayout()),
@@ -108,6 +111,10 @@ class _ArticleLayout extends StatelessWidget {
         const Center(child: _TextWidget('Example Carousel')),
         const SizedBox(height: 12),
         const _TextWidget(lipsumLg),
+        const SizedBox(height: 12),
+        const _TextWidget(lipsumLg),
+        const SizedBox(height: 12),
+        const _TextWidget(lipsumLg),
       ],
     );
   }
@@ -137,7 +144,6 @@ class _Header extends StatelessWidget {
             Spacer(),
             _TextWidget('Home'),
             SizedBox(width: 8),
-            _TextWidget('About'),
             SizedBox(width: 8),
             _TextWidget('Contact'),
           ],
@@ -164,6 +170,7 @@ class _TextWidget extends StatelessWidget {
         style: style ??
             const TextStyle(
               color: Colors.black,
+              height: 1.4,
             ),
       ),
     );
