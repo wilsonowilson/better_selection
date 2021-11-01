@@ -15,10 +15,11 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-          primarySwatch: Colors.blue,
-          textSelectionTheme: TextSelectionThemeData(
-            selectionColor: Colors.indigo.withOpacity(0.3),
-          )),
+        primarySwatch: Colors.blue,
+        textSelectionTheme: TextSelectionThemeData(
+          selectionColor: Colors.indigo.withOpacity(0.3),
+        ),
+      ),
       home: const MyHomePage(),
     );
   }
@@ -169,11 +170,7 @@ class _TextWidget extends StatelessWidget {
     return TextSelectable(
       textSpan: TextSpan(
         text: text,
-        style: style ??
-            const TextStyle(
-              color: Colors.black,
-              height: 1.4,
-            ),
+        style: style ?? const TextStyle(height: 1.4),
       ),
     );
   }
