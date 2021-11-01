@@ -129,7 +129,6 @@ class SelectableScopeState extends State<SelectableScope>
 
     final scopePosition =
         _layoutResolver.getScopePositionAtOffset(details.globalPosition);
-
     if (scopePosition != null) {
       _selectWordAt(
         scopePosition: scopePosition,
@@ -263,14 +262,8 @@ class SelectableScopeState extends State<SelectableScope>
       if (selectableState != null && selectableBox != null) {
         if (!selectableBox.hasSize) continue;
         if (!selectableState.mounted) continue;
-        final localBaseOffset = selectableBox.globalToLocal(
-          baseOffset,
-          ancestor: context.findRenderObject(),
-        );
-        final localExtentOffset = selectableBox.globalToLocal(
-          extentOffset,
-          ancestor: context.findRenderObject(),
-        );
+        final localBaseOffset = selectableBox.globalToLocal(baseOffset);
+        final localExtentOffset = selectableBox.globalToLocal(extentOffset);
         if (localBaseOffset == Offset.zero &&
             localExtentOffset == Offset.zero) {
           continue;
@@ -390,8 +383,7 @@ class SelectableScopeState extends State<SelectableScope>
       if (box == null) continue;
       if (!box.hasSize) continue;
       final size = box.size;
-      final offset =
-          box.localToGlobal(Offset.zero, ancestor: context.findRenderObject());
+      final offset = box.localToGlobal(Offset.zero);
       final rect = Rect.fromLTWH(offset.dx, offset.dy, size.width, size.height);
 
       if (rect.contains(cursorOffset)) {
@@ -682,6 +674,7 @@ class _SelectableScopeLayoutResolver {
 
   ScopePosition? getScopePositionAtOffset(Offset globalPosition) {
     final selectable = findSelectableAtOffset(globalPosition);
+
     if (selectable == null) return null;
     final selectableKey = selectable.key;
     final state = selectableKey.currentState!;
@@ -711,10 +704,8 @@ class _SelectableScopeLayoutResolver {
   }
 
   bool _isOffsetInBox(RenderBox widgetBox, Offset offset) {
-    final box = context.findRenderObject() as RenderBox?;
-    final widgetOffset = widgetBox.localToGlobal(Offset.zero, ancestor: box);
+    final widgetOffset = widgetBox.localToGlobal(Offset.zero);
     final widgetRect = widgetOffset & widgetBox.size;
-
     return widgetRect.contains(offset);
   }
 }
