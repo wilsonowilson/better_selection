@@ -424,7 +424,7 @@ class SelectableScopeState extends State<SelectableScope>
     });
   }
 
-  String _getSelectedText() {
+  String getSelectedText() {
     final buffer = StringBuffer();
     final sortedSelectables = _sortSelectablesByPosition();
     for (final selectable in sortedSelectables) {
@@ -618,7 +618,7 @@ class SelectableScopeState extends State<SelectableScope>
             isMacOS ? event.isMetaPressed : event.isControlPressed;
 
         if (primaryKeyPressed && event.logicalKey == LogicalKeyboardKey.keyC) {
-          final text = _getSelectedText();
+          final text = getSelectedText();
 
           final onCopy = widget.onCopy;
 
