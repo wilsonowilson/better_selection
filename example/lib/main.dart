@@ -54,7 +54,9 @@ class MyHomePage extends StatelessWidget {
               SizedBox(height: 12),
               _Header(),
               Expanded(
-                child: SingleChildScrollView(child: _ArticleLayout()),
+                child: SingleChildScrollView(
+                  child: _ArticleLayout(),
+                ),
               )
             ],
           ),

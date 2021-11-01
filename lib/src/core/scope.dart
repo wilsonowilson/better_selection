@@ -89,6 +89,7 @@ class SelectableScopeState extends State<SelectableScope>
   void dispose() {
     _ticker.dispose();
     _focusNode.dispose();
+    _currentScrollable?.position.removeListener(_updateDragSelection);
     super.dispose();
   }
 
@@ -164,8 +165,8 @@ class SelectableScopeState extends State<SelectableScope>
   }
 
   void _onPanStart(DragStartDetails details) {
-    _currentScrollable = _getTargetScrollable(details.globalPosition);
-
+    _currentScrollable = _getTargetScrollable(details.globalPosition)
+      ?..position.addListener(_updateDragSelection);
     _dragStartInScope = details.globalPosition;
 
     _clearSelection();
@@ -192,6 +193,7 @@ class SelectableScopeState extends State<SelectableScope>
     _dragEndInScope = null;
     _dragEndInScrollableViewport = null;
     _dragStartOffsetInScrollables = null;
+    _currentScrollable?.position.removeListener(_updateDragSelection);
     _currentScrollable = null;
   }
 
@@ -200,6 +202,7 @@ class SelectableScopeState extends State<SelectableScope>
     _dragEndInScope = null;
     _dragEndInScrollableViewport = null;
     _dragStartOffsetInScrollables = null;
+    _currentScrollable?.position.removeListener(_updateDragSelection);
     _currentScrollable = null;
   }
 
@@ -220,25 +223,29 @@ class SelectableScopeState extends State<SelectableScope>
       } else if (scrollable == _currentScrollable) {
         final scrollablePosition =
             Offset(0, _currentScrollable!.position.pixels);
+        final directionIsDown = scrollable.axisDirection == AxisDirection.down;
         _selectRegion(
           selectables: selectables,
           baseOffset: _dragStartInScope!.translate(
             0,
-            -(scrollablePosition.dy -
-                _dragStartOffsetInScrollables![scrollable]!),
+            (scrollablePosition.dy -
+                    _dragStartOffsetInScrollables![scrollable]!) *
+                (directionIsDown ? -1 : 1),
           ),
           extentOffset: _dragEndInScope!,
           selectionType: _selectionType,
         );
       } else {
         final scrollablePosition = Offset(0, scrollable.position.pixels);
+        final directionIsDown = scrollable.axisDirection == AxisDirection.down;
 
         _selectRegion(
           selectables: selectables,
           baseOffset: _dragStartInScope!.translate(
             0,
-            -(_dragStartOffsetInScrollables![scrollable]! +
-                scrollablePosition.dy),
+            (_dragStartOffsetInScrollables![scrollable]! +
+                    scrollablePosition.dy) *
+                (directionIsDown ? -1 : 1),
           ),
           extentOffset: _dragEndInScope!,
           selectionType: _selectionType,
@@ -536,8 +543,12 @@ class SelectableScopeState extends State<SelectableScope>
 
   void _scrollUp(ScrollableState scrollable) {
     if (_dragEndInScrollableViewport == null) return;
+    final directionIsDown = scrollable.axisDirection == AxisDirection.down;
 
-    if (scrollable.position.pixels <= 0) {
+    if (directionIsDown && scrollable.position.pixels <= 0) {
+      return;
+    } else if (!directionIsDown &&
+        scrollable.position.pixels >= scrollable.position.maxScrollExtent) {
       return;
     }
 
@@ -546,7 +557,10 @@ class SelectableScopeState extends State<SelectableScope>
     final speedPercent = 1.0 - (gutterAmount / _dragGutterExtent);
     final scrollAmount = lerpDouble(0, _maxDragSpeed, speedPercent);
 
-    scrollable.position.jumpTo(scrollable.position.pixels - scrollAmount!);
+    scrollable.position.jumpTo(
+      scrollable.position.pixels +
+          (directionIsDown ? -scrollAmount! : scrollAmount!),
+    );
   }
 
   void _startScrollingDown() {
@@ -571,8 +585,13 @@ class SelectableScopeState extends State<SelectableScope>
 
   void _scrollDown(ScrollableState scrollable) {
     if (_dragEndInScrollableViewport == null) return;
+    final directionIsDown = scrollable.axisDirection == AxisDirection.down;
 
-    if (scrollable.position.pixels >= scrollable.position.maxScrollExtent) {
+    if (directionIsDown &&
+        scrollable.position.pixels >= scrollable.position.maxScrollExtent) {
+      return;
+    }
+    if (!directionIsDown && scrollable.position.pixels <= 0) {
       return;
     }
 
@@ -583,7 +602,10 @@ class SelectableScopeState extends State<SelectableScope>
     final speedPercent = 1.0 - (gutterAmount / _dragGutterExtent);
     final scrollAmount = lerpDouble(0, _maxDragSpeed, speedPercent);
 
-    scrollable.position.jumpTo(scrollable.position.pixels + scrollAmount!);
+    scrollable.position.jumpTo(
+      scrollable.position.pixels +
+          (directionIsDown ? scrollAmount! : -scrollAmount!),
+    );
   }
 
   void _onTick(elapsedTime) {
@@ -655,6 +677,7 @@ class SelectableScopeState extends State<SelectableScope>
           onHover: _onMouseMove,
           cursor: _cursorStyle ?? MouseCursor.defer,
           child: Listener(
+            onPointerSignal: (_) => _updateDragSelection(),
             onPointerMove: _onMouseMove,
             child: widget.child,
           ),
