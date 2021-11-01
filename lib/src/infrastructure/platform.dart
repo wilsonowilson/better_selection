@@ -1,6 +1,6 @@
 import 'platform/platform_unsupported.dart'
     if (dart.library.io) 'platform/platform_io.dart'
-    if (dart.library.html) 'platform/platform_html.dart' as platform;
+    if (dart.library.html) 'platform/platform_web.dart' as platform;
 
 class Platform {
   static final _instance = Platform();
