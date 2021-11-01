@@ -116,7 +116,12 @@ class _BoxSelectableState extends SelectableWidgetState<BoxSelectable> {
 
   @override
   void updateSelection(SelectableSelection selection) {
-    if (selection is! BinarySelectableSelection) return;
+    if (selection is! BinarySelectableSelection) {
+      throw Exception(
+        'Expected selection of type BinarySelectableSelection but got $selection',
+      );
+    }
+    if (selection == _selection) return;
 
     setState(() {
       _selection = selection;

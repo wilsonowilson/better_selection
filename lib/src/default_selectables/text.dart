@@ -47,6 +47,8 @@ class _TextSelectableState extends SelectableWidgetState<TextSelectable>
       );
     }
 
+    if (selection == _selection) return;
+
     setState(() {
       _selection = selection;
     });
