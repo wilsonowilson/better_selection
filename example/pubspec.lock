@@ -195,8 +195,8 @@ packages:
     dependency: transitive
     description:
       path: super_editor
-      ref: main
-      resolved-ref: "0fa21ff08af64bea4379b850fd2bc2affb1b3cee"
+      ref: HEAD
+      resolved-ref: b12ab3d8da4247086cf85c738003e94971aa2e01
       url: "git://github.com/superlistapp/super_editor.git"
     source: git
     version: "0.1.0"

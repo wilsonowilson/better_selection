@@ -15,7 +15,6 @@ dependencies:
   super_editor:
     git:
       url: git://github.com/superlistapp/super_editor.git
-      ref: main
       path: super_editor
 
 dev_dependencies:
