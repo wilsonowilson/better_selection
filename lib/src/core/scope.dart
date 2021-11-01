@@ -107,6 +107,48 @@ class SelectableScopeState extends State<SelectableScope>
   _SelectableScopeLayoutResolver get _layoutResolver =>
       _SelectableScopeLayoutResolver(registeredSelectables, context);
 
+  List<Selectable> get _selected {
+    final selected = <Selectable>[];
+    for (final selectable in registeredSelectables) {
+      final state = selectable.key.currentState;
+      if (state == null) continue;
+      if (state.selection != state.getVoidSelection()) {
+        selected.add(selectable);
+      }
+    }
+    return selected;
+  }
+
+  bool get hasSelections {
+    return _selected.isNotEmpty;
+  }
+
+  bool _hasWordSelection(Selectable selectable) {
+    final state = selectable.key.currentState!;
+
+    if (state is! TextSelectableWidgetState) return false;
+
+    final text = state.serializeSelection(state.selection) ?? '';
+
+    return !text.contains(' ') || text.replaceAll(' ', '').isEmpty;
+  }
+
+  bool get _hasSingleWordSelection {
+    final _selectablesWithSelection = <Selectable>[];
+    for (final selectable in registeredSelectables) {
+      final state = selectable.key.currentState;
+      if (state == null) continue;
+      if (state.selection != state.getVoidSelection()) {
+        _selectablesWithSelection.add(selectable);
+      }
+    }
+
+    if (_selectablesWithSelection.length != 1) return false;
+    final selectable = _selectablesWithSelection.first;
+
+    return _hasWordSelection(selectable);
+  }
+
   void _clearSelection() {
     for (final selectable in registeredSelectables) {
       final state = selectable.key.currentState;
@@ -119,6 +161,35 @@ class SelectableScopeState extends State<SelectableScope>
   void _onTapDown(TapDownDetails details) {
     _clearSelection();
     _selectionType = SelectionType.position;
+
+    _focusNode.requestFocus();
+  }
+
+  void _onSecondaryTapDown(TapDownDetails details) {
+    final selectable =
+        _layoutResolver.findSelectableAtOffset(details.globalPosition);
+    if (selectable == null) return;
+
+    if (hasSelections) {
+      if (_selected.length != 1) {
+        return;
+      } else {
+        if (_selected.first != selectable && !_hasSingleWordSelection) return;
+        if (_selected.first == selectable && !_hasWordSelection(selectable)) {
+          return;
+        }
+      }
+    }
+
+    _clearSelection();
+
+    final scopePosition =
+        _layoutResolver.getScopePositionAtOffset(details.globalPosition);
+    if (scopePosition != null) {
+      _selectWordAt(
+        scopePosition: scopePosition,
+      );
+    }
 
     _focusNode.requestFocus();
   }
@@ -659,6 +730,13 @@ class SelectableScopeState extends State<SelectableScope>
                 ..onDoubleTap = _onDoubleTap
                 ..onTripleTapDown = _onTripleTapDown
                 ..onTripleTap = _onTripleTap;
+            },
+          ),
+          TapGestureRecognizer:
+              GestureRecognizerFactoryWithHandlers<TapGestureRecognizer>(
+            () => TapGestureRecognizer(),
+            (TapGestureRecognizer recognizer) {
+              recognizer.onSecondaryTapDown = _onSecondaryTapDown;
             },
           ),
           PanGestureRecognizer:
