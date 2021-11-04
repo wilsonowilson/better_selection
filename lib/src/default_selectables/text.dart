@@ -199,7 +199,8 @@ class _TextSelectableState extends SelectableWidgetState<TextSelectable>
     final textDirection = widget.textDirection ??
         Directionality.maybeOf(context) ??
         TextDirection.ltr;
-    final defaultStyle = Theme.of(context).textTheme.bodyText2;
+
+    final defaultStyle = DefaultTextStyle.of(context).style;
 
     return SuperSelectableText(
       key: _selectableTextKey,
