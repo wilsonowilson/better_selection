@@ -196,8 +196,8 @@ packages:
     description:
       path: super_editor
       ref: HEAD
-      resolved-ref: b12ab3d8da4247086cf85c738003e94971aa2e01
-      url: "git://github.com/superlistapp/super_editor.git"
+      resolved-ref: "8be20d2563c59775079172c8e05dd6ff8582d8a4"
+      url: "https://github.com/superlistapp/super_editor.git"
     source: git
     version: "0.1.0"
   term_glyph:
