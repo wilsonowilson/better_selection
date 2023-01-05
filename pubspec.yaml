@@ -5,21 +5,16 @@ publish_to: none
 homepage: https://github.com/wilsonowilson/better_selection
 
 environment:
-  sdk: ">=2.12.0 <3.0.0"
-  flutter: ">=1.17.0"
+  sdk: ">=2.12.0 <=3.3.10"
 
 dependencies:
-  collection: ^1.15.0
   flutter:
     sdk: flutter
-  super_editor:
-    git:
-      url: https://github.com/superlistapp/super_editor.git
-      path: super_editor
+  super_editor: ^0.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  lint: ^1.7.2
+  lint: ^2.0.1
 
 flutter: null

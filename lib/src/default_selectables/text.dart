@@ -9,8 +9,7 @@ class TextSelectable extends SelectableWidget {
     GlobalKey<SelectableWidgetState>? key,
     required this.textSpan,
     this.selectableDecoration,
-    this.textAlign = TextAlign.left,
-    this.textDirection,
+    this.textAlign = TextAlign.left
   }) : super(key: key ?? GlobalKey<SelectableWidgetState>());
 
   TextSelectable.plain(
@@ -19,7 +18,6 @@ class TextSelectable extends SelectableWidget {
     GlobalKey<SelectableWidgetState>? key,
     this.selectableDecoration,
     this.textAlign = TextAlign.left,
-    this.textDirection,
   })  : textSpan = TextSpan(
           text: text,
           style: style,
@@ -29,7 +27,6 @@ class TextSelectable extends SelectableWidget {
   final TextSpan textSpan;
   final TextSelectableDecoration? selectableDecoration;
   final TextAlign textAlign;
-  final TextDirection? textDirection;
 
   @override
   _TextSelectableState createState() => _TextSelectableState();
@@ -196,9 +193,6 @@ class _TextSelectableState extends SelectableWidgetState<TextSelectable>
           selectionColor:
               selectionTheme.selectionColor ?? Colors.blue.withOpacity(0.3),
         );
-    final textDirection = widget.textDirection ??
-        Directionality.maybeOf(context) ??
-        TextDirection.ltr;
 
     final defaultStyle = DefaultTextStyle.of(context).style;
 
@@ -209,7 +203,6 @@ class _TextSelectableState extends SelectableWidgetState<TextSelectable>
         style: defaultStyle,
       ),
       textAlign: widget.textAlign,
-      textDirection: textDirection,
       textSelection: _selection,
       textSelectionDecoration: TextSelectionDecoration(
         selectionColor: selectionDecoration.selectionColor,
@@ -223,6 +216,7 @@ class _TextSelectableState extends SelectableWidgetState<TextSelectable>
         _selectableTextKey.currentState?.isTextAtOffset(localOffset) ?? false;
 
     if (offsetOverlapsText) return SystemMouseCursors.text;
+    return null;
   }
 }
 
